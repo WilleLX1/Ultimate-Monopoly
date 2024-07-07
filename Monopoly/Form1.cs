@@ -1,6 +1,6 @@
 namespace Monopoly
 {
-    
+
     public partial class Form1 : Form
     {
         // Description: Monopoly game
@@ -18,7 +18,7 @@ namespace Monopoly
         PictureBox[] boardSpaces;
         int boxSize = 50; // Size of each box on the board
         int boardSize = 11; // Size of the board (11x11)
-        Property[] properties = new Property[20];
+        Property[] properties = new Property[28];
         int currentFreeParkingPot = 0;
 
         public Form1()
@@ -26,7 +26,7 @@ namespace Monopoly
             InitializeComponent();
             InitializePlayers();
             GenerateBoard();
-            IntizalizeProperties();
+            InitializeProperties();
         }
 
         private void Log(string message)
@@ -51,16 +51,16 @@ namespace Monopoly
             // Set the size of the PictureBoxes
             for (int i = 0; i < players.Length; i++)
             {
-                players[i].Size = new Size(30, 30);
+                players[i].Size = new Size(22, 22);
                 players[i].Location = new Point(10 + (i * 40), 10); // Set initial location
                 this.Controls.Add(players[i]); // Add PictureBox to the form
             }
 
             // Initialize the player money
-            playerMoney[0] = 1500;
-            playerMoney[1] = 1500;
-            playerMoney[2] = 1500;
-            playerMoney[3] = 1500;
+            playerMoney[0] = 30000;
+            playerMoney[1] = 30000;
+            playerMoney[2] = 30000;
+            playerMoney[3] = 30000;
 
             // Initialize the player position
             playerPosition[0] = 0;
@@ -83,18 +83,18 @@ namespace Monopoly
 
         private void GenerateBoard()
         {
-            boardSpaces = new PictureBox[(boardSize - 1) * 4];
+            boardSpaces = new PictureBox[boardSize * 4 - 4]; // Adjusted the array size to account for the corner spaces
             int index = 0;
 
             // Top row (left to right)
-            for (int i = 0; i < boardSize - 1; i++)
+            for (int i = 0; i < boardSize; i++)
             {
                 boardSpaces[index] = CreateBoardSpace(i * boxSize, 0);
                 index++;
             }
 
             // Right column (top to bottom)
-            for (int i = 0; i < boardSize - 1; i++)
+            for (int i = 1; i < boardSize; i++)
             {
                 boardSpaces[index] = CreateBoardSpace((boardSize - 1) * boxSize, i * boxSize);
                 index++;
@@ -108,7 +108,7 @@ namespace Monopoly
             }
 
             // Left column (bottom to top)
-            for (int i = boardSize - 2; i >= 0; i--)
+            for (int i = boardSize - 2; i > 0; i--)
             {
                 boardSpaces[index] = CreateBoardSpace(0, i * boxSize);
                 index++;
@@ -128,246 +128,248 @@ namespace Monopoly
             return box;
         }
 
+
         // Initialize properties
-        private void IntizalizeProperties()
+        private void InitializeProperties()
         {
-            // Create properties
-            Property property1 = new Property
+            properties = new Property[40]; // Adjusted array size to accommodate all properties
+
+            properties[0] = null;
+            properties[1] = new Property
             {
                 Name = "Västerlång Gatan",
                 Price = 1000,
-                Rent = 10,
+                RentStages = new int[] { 50, 200, 600, 1700, 3000, 4750 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property3 = new Property
+            properties[2] = null;
+            properties[3] = new Property
             {
                 Name = "Hornsgatan",
                 Price = 1000,
-                Rent = 20,
+                RentStages = new int[] { 100, 400, 1100, 3400, 6000, 8550 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property5 = new Property
+            properties[4] = null;
+            properties[5] = new Property
             {
                 Name = "Södra Station",
                 Price = 4000,
-                Rent = 30,
+                RentStages = new int[] { 0, 0, 0, 0, 0, 0 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property6 = new Property
+            properties[6] = new Property
             {
                 Name = "Folkunga Gatan",
                 Price = 2000,
-                Rent = 40,
+                RentStages = new int[] { 100, 550, 1700, 5150, 7600, 9500 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property8 = new Property
+            properties[7] = null;
+            properties[8] = new Property
             {
                 Name = "Götagatan",
                 Price = 2000,
-                Rent = 50,
+                RentStages = new int[] { 100, 550, 1700, 5150, 7600, 9500 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property9 = new Property
+            properties[9] = new Property
             {
                 Name = "Ringvägen",
                 Price = 2200,
-                Rent = 60,
+                RentStages = new int[] { 150, 750, 2000, 5750, 8500, 11500 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property11 = new Property
+            properties[10] = null;
+            properties[11] = new Property
             {
                 Name = "S:T Eriksgatan",
                 Price = 2500,
-                Rent = 70,
+                RentStages = new int[] { 200, 1000, 2000, 8500, 12000, 14250 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property13 = new Property
+            properties[12] = new Property
+            {
+                Name = "Elverket",
+                Price = 3000,
+                RentStages = new int[] { 0, 0, 0, 0, 0, 0 },
+                IsOwned = false,
+                Owner = -1
+            };
+            properties[13] = new Property
             {
                 Name = "Odengatan",
                 Price = 2500,
-                Rent = 80,
+                RentStages = new int[] { 200, 1000, 2800, 8500, 12000, 14250 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property14 = new Property
+            properties[14] = new Property
             {
                 Name = "Valhallavägen",
                 Price = 3000,
-                Rent = 90,
+                RentStages = new int[] { 250, 1150, 3400, 9500, 13000, 17000 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property15 = new Property
+            properties[15] = new Property
             {
                 Name = "Östra Station",
                 Price = 3000,
-                Rent = 90,
+                RentStages = new int[] { 0, 0, 0, 0, 0, 0 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property16 = new Property
+            properties[16] = new Property
             {
                 Name = "Sturegatan",
                 Price = 3500,
-                Rent = 100,
+                RentStages = new int[] { 250, 1350, 3800, 10500, 14250, 18000 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property18 = new Property
+            properties[17] = null;
+            properties[18] = new Property
             {
                 Name = "Karlavägen",
                 Price = 3500,
-                Rent = 110,
+                RentStages = new int[] { 250, 1350, 3800, 10500, 14250, 18000 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property19 = new Property
+            properties[19] = new Property
             {
                 Name = "Narvavägen",
                 Price = 3800,
-                Rent = 120,
+                RentStages = new int[] { 300, 1500, 4200, 11500, 15000, 19000 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property21 = new Property
+            properties[20] = null;
+            properties[21] = new Property
             {
                 Name = "Strandvägen",
                 Price = 4200,
-                Rent = 130,
+                RentStages = new int[] { 350, 1700, 4750, 13000, 16500, 20000 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property23 = new Property
+            properties[22] = null;
+            properties[23] = new Property
             {
                 Name = "Kungsträdgårdsgatan",
                 Price = 4200,
-                Rent = 140,
+                RentStages = new int[] { 350, 1700, 4750, 13000, 16500, 20000 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property24 = new Property
+            properties[24] = new Property
             {
                 Name = "Hamngatan",
                 Price = 4500,
-                Rent = 150,
+                RentStages = new int[] { 400, 2000, 5750, 14000, 17500, 21000 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property25 = new Property
+            properties[25] = new Property
             {
                 Name = "Central Station",
                 Price = 4000,
-                Rent = 160,
+                RentStages = new int[] { 0, 0, 0, 0, 0, 0 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property26 = new Property
+            properties[26] = new Property
             {
                 Name = "Vasagatan",
                 Price = 5000,
-                Rent = 160,
+                RentStages = new int[] { 400, 2200, 6300, 15000, 18500, 22000 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property27 = new Property
+            properties[27] = new Property
             {
                 Name = "Kungsgatan",
                 Price = 5000,
-                Rent = 170,
+                RentStages = new int[] { 400, 2200, 6300, 15000, 18500, 22000 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property29 = new Property
+            properties[28] = new Property
+            {
+                Name = "Vattenledningsverket",
+                Price = 3000,
+                RentStages = new int[] { 0, 0, 0, 0, 0, 0 },
+                IsOwned = false,
+                Owner = -1
+            };
+            properties[29] = new Property
             {
                 Name = "Stureplan",
                 Price = 5300,
-                Rent = 180,
+                RentStages = new int[] { 400, 2300, 6800, 16000, 19500, 23000 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property31 = new Property
+            properties[30] = null;
+            properties[31] = new Property
             {
                 Name = "Gustav Adolfs Torg",
                 Price = 6000,
-                Rent = 190,
+                RentStages = new int[] { 500, 2500, 7500, 17000, 21000, 24200 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property32 = new Property
+            properties[32] = new Property
             {
                 Name = "Drottningatan",
                 Price = 6000,
-                Rent = 200,
+                RentStages = new int[] { 500, 2500, 7500, 17000, 21000, 24200 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property34 = new Property
+            properties[33] = null;
+            properties[34] = new Property
             {
                 Name = "Diplomatstaden",
                 Price = 6000,
-                Rent = 210,
+                RentStages = new int[] { 550, 2850, 8500, 19000, 23000, 27000 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property35 = new Property
+            properties[35] = new Property
             {
                 Name = "Norra Station",
                 Price = 6000,
-                Rent = 210,
+                RentStages = new int[] { 0, 0, 0, 0, 0, 0 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property37 = new Property
+            properties[36] = null;
+            properties[37] = new Property
             {
                 Name = "Centrum",
                 Price = 6500,
-                Rent = 220,
+                RentStages = new int[] { 650, 3300, 9500, 21000, 25000, 28500 },
                 IsOwned = false,
                 Owner = -1
             };
-            Property property39 = new Property
+            properties[38] = null;
+            properties[39] = new Property
             {
                 Name = "Norrmalmstorg",
                 Price = 8000,
-                Rent = 230,
+                RentStages = new int[] { 1000, 4000, 12000, 26500, 32500, 40000 },
                 IsOwned = false,
                 Owner = -1
             };
-
-            // Add properties to the array
-            properties[0] = property1;
-            properties[1] = property3;
-            properties[2] = property5;
-            properties[3] = property6;
-            properties[4] = property8;
-            properties[5] = property9;
-            properties[6] = property11;
-            properties[7] = property13;
-            properties[8] = property14;
-            properties[9] = property15;
-            properties[10] = property16;
-            properties[11] = property18;
-            properties[12] = property19;
-            properties[13] = property21;
-            properties[14] = property23;
-            properties[15] = property24;
-            properties[16] = property25;
-            properties[17] = property26;
-            properties[18] = property27;
-            properties[19] = property29;
-            properties[20] = property31;
-            properties[21] = property32;
-            properties[22] = property34;
-            properties[23] = property35;
-            properties[24] = property37;
-            properties[25] = property39;
         }
 
 
@@ -382,15 +384,18 @@ namespace Monopoly
         // Move the player
         private void MovePlayer(int player, int spaces)
         {
+            // Get int of player current position
+            int currentPos = playerPosition[player];
+
             // Update player position
             playerPosition[player] = (playerPosition[player] + spaces) % boardSpaces.Length;
             int newPos = playerPosition[player];
 
             // Move the player to the new position
             players[player].Location = new Point(boardSpaces[newPos].Location.X + (boxSize / 4), boardSpaces[newPos].Location.Y + (boxSize / 4));
-        
+
             // Apply effects of landing on the space
-            ApplySpaceEffects(player, newPos);
+            ApplySpaceEffects(player, newPos, currentPos);
         }
 
         // Function for moving the player to a specific space
@@ -406,14 +411,20 @@ namespace Monopoly
 
 
         // Apply effects of landing on the space
-        private void ApplySpaceEffects(int player, int space)
+        private void ApplySpaceEffects(int player, int space, int oldSpace)
         {
+            // Ensure the player index is valid
+            if (player < 0 || player >= players.Length) return;
+
             // Check what space the player landed on
             if (space == 0)
             {
-                // Player landed on Go
-                playerMoney[player] += 4000;
-                Log("Player " + player + " landed on Go and collected $2000");
+                if (oldSpace > 0)
+                {
+                    // Player passed Go
+                    playerMoney[player] += 4000;
+                    Log("Player " + player + " passed Go and collected $4000");
+                }
             }
             else if (space == 10)
             {
@@ -435,60 +446,51 @@ namespace Monopoly
                 // Player landed on Go to Jail
                 Log("Player " + player + " landed on Go to Jail");
             }
-            
+
             // Chance and Community Chest
-            else if (space == 2)
+            else if (space == 2 || space == 17 || space == 33)
             {
                 // Allmänning
                 DrawCommunityChestCard(player);
             }
-            else if (space == 7)
+            else if (space == 7 || space == 22 || space == 36)
             {
                 // Chans
                 DrawChanceCard(player);
             }
-            else if (space == 17)
-            {
-                // Allmänning
-                DrawCommunityChestCard(player);
-            }
-            else if (space == 22)
-            {
-                // Chans
-                DrawChanceCard(player);
-            }
-            else if (space == 33)
-            {
-                // Allmänning
-                DrawCommunityChestCard(player);
-            }
-            
+
             // Utilities
-            else if (space == 28)
+            else if (space == 28 || space == 12)
             {
-                // Vattenverk
-            }
-            else if (space == 12)
-            {
-                // Elektricitetsverk
+                // Vattenverk / Elverket
+                if (IsPropertyOwned(space))
+                {
+                    int steps = space - oldSpace;
+                    // Pay rent
+                    PayRentUtilities(player, space, steps);
+                }
+                else
+                {
+                    // Buy property
+                    BuyProperty(player, space, properties[space].Price);
+                }
             }
 
             // Järnvägsstationer
-            else if (space == 5)
+            else if (space == 5 || space == 15 || space == 25 || space == 35)
             {
                 // Järnvägsstation
-            }
-            else if (space == 15)
-            {
-                // Järnvägsstation
-            }
-            else if (space == 25)
-            {
-                // Järnvägsstation
-            }
-            else if (space == 35)
-            {
-                // Järnvägsstation
+                // Check if the property is owned
+                if (IsPropertyOwned(space))
+                {
+                    // Pay rent
+                    PayRentJärnväg(player, space);
+                }
+                else
+                {
+                    // Buy property
+                    BuyProperty(player, space, properties[space].Price);
+                }
             }
 
             // Skatter
@@ -515,29 +517,114 @@ namespace Monopoly
                 // Player landed on a property
                 Log("Player " + player + " landed on property " + space);
                 // Check if the property is owned
-                if (IsPropertyOwned(space))
+                if (properties[space].IsOwned)
                 {
                     // Pay rent
-                    PayRent(player, space);
+                    int owner = properties[space].Owner;
+                    if (owner != player) // Ensure player doesn't pay rent to themselves
+                    {
+                        int rent = properties[space].GetRent();
+                        if (playerMoney[player] >= rent)
+                        {
+                            playerMoney[player] -= rent;
+                            playerMoney[owner] += rent;
+                            Log("Player " + player + " paid $" + rent + " rent to Player " + owner);
+                        }
+                        else
+                        {
+                            Log("Player " + player + " does not have enough money to pay rent to Player " + owner);
+                        }
+                    }
                 }
                 else
                 {
-                    // Buy property
-                    BuyProperty(player, space, properties[space].Price);
+                    // Offer to buy property
+                    int price = properties[space].Price;
+                    if (playerMoney[player] >= price)
+                    {
+                        // Ask player if they want to buy the property
+                        DialogResult result = MessageBox.Show("Do you want to buy property " + space + " for $" + price + "?", "Buy Property", MessageBoxButtons.YesNo);
+                        if (result == DialogResult.Yes)
+                        {
+                            playerMoney[player] -= price;
+                            properties[space].IsOwned = true;
+                            properties[space].Owner = player;
+                            Log("Player " + player + " bought property " + space + " for $" + price);
+                        }
+                        else
+                        {
+                            Log("Player " + player + " declined to buy property " + space);
+                        }
+                    }
+                    else
+                    {
+                        Log("Player " + player + " does not have enough money to buy property " + space);
+                    }
                 }
             }
         }
 
         // Function to pay rent
-        private void PayRent(int player, int property)
+        private void PayRent(int player, int propertyIndex)
+        {
+            Property property = properties[propertyIndex];
+            int owner = property.Owner;
+            int rent = property.GetRent();
+
+            if (playerMoney[player] >= rent)
+            {
+                playerMoney[player] -= rent;
+                playerMoney[owner] += rent;
+                Log("Player " + player + " paid $" + rent + " rent to Player " + owner);
+            }
+            else
+            {
+                Log("Player " + player + " does not have enough money to pay rent to Player " + owner);
+            }
+        }
+
+        // Function to pay rent for Järnväg
+        private void PayRentJärnväg(int player, int property)
         {
             // Get the owner of the property
             int owner = properties[property].Owner;
             // Get the rent amount
-            int rent = properties[property].Rent;
+            int rent = 0;
+            // Check how many Järnväg stations the owner has
+            int järnvägCount = 0;
+            for (int i = 0; i < properties.Length; i++)
+            {
+                if (properties[i] != null)
+                {
+                    if (properties[i].Owner == owner)
+                    {
+                        if (i == 5 || i == 15 || i == 25 || i == 35)
+                        {
+                            järnvägCount++;
+                        }
+                    }
+                }
+            }
+            // Calculate rent
+            if (järnvägCount == 1)
+            {
+                rent = 500;
+            }
+            else if (järnvägCount == 2)
+            {
+                rent = 1000;
+            }
+            else if (järnvägCount == 3)
+            {
+                rent = 2000;
+            }
+            else if (järnvägCount == 4)
+            {
+                rent = 4000;
+            }
             // Pay the rent
             if (playerMoney[player] - rent < 0)
-                {
+            {
                 // Player does not have enough money to pay rent
                 Log("Player " + player + " does not have enough money to pay rent to Player " + owner);
                 return;
@@ -547,14 +634,64 @@ namespace Monopoly
             Log("Player " + player + " paid $" + rent + " rent to Player " + owner);
         }
 
+        // Function to pay rent for Utilities
+        private void PayRentUtilities(int player, int property, int steps)
+        {
+            // Get the owner of the property
+            int owner = properties[property].Owner;
+            // Get the rent amount
+            int rent = 0;
+            int rentPerStep = 0;
+            // Check how many Utilities the owner has
+            int utilityCount = 0;
+            for (int i = 0; i < properties.Length; i++)
+            {
+                if (properties[i] != null)
+                {
+                    if (properties[i].Owner == owner)
+                    {
+                        // Check if the property is a Utility
+                        if (i == 12 || i == 28)
+                        {
+                            utilityCount++;
+                        }
+                    }
+                }
+            }
+            // Calculate rent
+            if (utilityCount == 1)
+            {
+                rentPerStep = 100;
+            }
+            else if (utilityCount == 2)
+            {
+                rentPerStep = 200;
+            }
+            // Calculate rent
+            rent = rentPerStep * steps;
+            // Pay the rent
+            if (playerMoney[player] - rent < 0)
+            {
+                // Player does not have enough money to pay rent
+                Log("Player " + player + " does not have enough money to pay rent to Player " + owner);
+                return;
+            }
+            playerMoney[player] -= rent;
+            playerMoney[owner] += rent;
+            Log("Player " + player + " paid $" + rent + " rent to Player " + owner + " (" + rentPerStep + " * " + steps + ")");
+        }
+
+
         // Function to buy property
         private void BuyProperty(int player, int property, int price)
         {
+            // Get property name
+            string propertyName = properties[property].Name;
             // Check if the player has enough money
             if (playerMoney[player] >= price)
             {
                 // Ask player if they want to buy the property
-                DialogResult result = MessageBox.Show("Do you want to buy property " + property + " for $" + price + "?", "Buy Property", MessageBoxButtons.YesNo);
+                DialogResult result = MessageBox.Show("Do you want to buy property " + propertyName + " (" + property + ") for $" + price + "?", "Buy Property", MessageBoxButtons.YesNo);
                 if (result == DialogResult.Yes)
                 {
                     // Player bought the property
@@ -562,12 +699,12 @@ namespace Monopoly
                     // Set property as owned
                     properties[property].IsOwned = true;
                     properties[property].Owner = player;
-                    Log("Player " + player + " bought property " + property + " for $" + price);
+                    Log("Player " + player + " bought property " + propertyName + " (" + property + ") for $" + price);
                 }
             }
             else
             {
-                Log("Player " + player + " does not have enough money to buy property " + property);
+                Log("Player " + player + " does not have enough money to buy property " + propertyName + " (" + property + ")");
             }
         }
 
@@ -576,6 +713,54 @@ namespace Monopoly
         {
             return properties[property].IsOwned;
         }
+
+
+        private void BuyHouse(int player, int propertyIndex)
+        {
+            Property property = properties[propertyIndex];
+            if (property.Owner != player || property.Hotel || property.Houses >= 4)
+            {
+                Log("Cannot buy more houses or hotels for this property.");
+                return;
+            }
+
+            int houseCost = property.Price / 2; // Example house cost, adjust as needed
+            if (playerMoney[player] >= houseCost)
+            {
+                playerMoney[player] -= houseCost;
+                property.Houses++;
+                Log("Player " + player + " bought a house on " + property.Name);
+            }
+            else
+            {
+                Log("Player " + player + " does not have enough money to buy a house on " + property.Name);
+            }
+        }
+
+        private void BuyHotel(int player, int propertyIndex)
+        {
+            Property property = properties[propertyIndex];
+            if (property.Owner != player || property.Hotel || property.Houses < 4)
+            {
+                Log("Cannot buy a hotel for this property.");
+                return;
+            }
+
+            int hotelCost = property.Price; // Example hotel cost, adjust as needed
+            if (playerMoney[player] >= hotelCost)
+            {
+                playerMoney[player] -= hotelCost;
+                property.Houses = 0;
+                property.Hotel = true;
+                Log("Player " + player + " bought a hotel on " + property.Name);
+            }
+            else
+            {
+                Log("Player " + player + " does not have enough money to buy a hotel on " + property.Name);
+            }
+        }
+
+
 
 
         // Function to draw a Chance Card
@@ -901,7 +1086,7 @@ namespace Monopoly
             if (dice1 == dice2)
             {
                 // Player rolled a double
-                Log("Player " + currentPlayer + " rolled a double (" + dice1 + ", " + dice2 + ")");
+                Log("Player " + (currentPlayer + 1) + " rolled a double (" + dice1 + ", " + dice2 + ")");
             }
 
             // Switch to next player
@@ -918,14 +1103,140 @@ namespace Monopoly
             lblPos2.Text = "Position: " + playerPosition[1];
             lblPos3.Text = "Position: " + playerPosition[2];
             lblPos4.Text = "Position: " + playerPosition[3];
+
+            // Update player owned properties
+            lblOwned1.Text = "Properties: " + GetPlayerProperties(0);
+            lblOwned2.Text = "Properties: " + GetPlayerProperties(1);
+            lblOwned3.Text = "Properties: " + GetPlayerProperties(2);
+            lblOwned4.Text = "Properties: " + GetPlayerProperties(3);
+        }
+
+        private string GetPlayerProperties(int player)
+        {
+            int totalProperties = 0;
+            string properties = "\r\n";
+            for (int i = 0; i < this.properties.Length; i++)
+            {
+                if (this.properties[i] != null)
+                {
+                    if (this.properties[i].Owner == player)
+                    {
+                        totalProperties++;
+                        // Get name of property
+                        string name = this.properties[i].Name;
+                        properties += name + "\r\n";
+                    }
+                }
+            }
+            string finnished = (totalProperties + properties);
+            return finnished;
+        }
+
+        private void btnUpgrade1_Click(object sender, EventArgs e)
+        {
+            // Choose a randoproperty to buy a house on (that user 4 owns)
+            Property[] properties = new Property[] { };
+            foreach (Property property in properties)
+            {
+                if (property != null)
+                {
+                    if (property.Owner == 0)
+                    {
+                        // Add property to list
+                        properties.Append(property);
+                    }
+                }
+            }
+            // Choose a random property
+            Random rnd = new Random();
+            int propertyIndex = rnd.Next(0, properties.Length);
+            // Buy a house on the property
+            BuyHouse(0, propertyIndex);
+        }
+
+        private void btnUpgrade2_Click(object sender, EventArgs e)
+        {
+            // Choose a randoproperty to buy a house on (that user 4 owns)
+            Property[] properties = new Property[] { };
+            foreach (Property property in properties)
+            {
+                if (property != null)
+                {
+                    if (property.Owner == 1)
+                    {
+                        // Add property to list
+                        properties.Append(property);
+                    }
+                }
+            }
+            // Choose a random property
+            Random rnd = new Random();
+            int propertyIndex = rnd.Next(0, properties.Length);
+            // Buy a house on the property
+            BuyHouse(1, propertyIndex);
+        }
+
+        private void btnUpgrade3_Click(object sender, EventArgs e)
+        {
+            // Choose a randoproperty to buy a house on (that user 4 owns)
+            Property[] properties = new Property[] { };
+            foreach (Property property in properties)
+            {
+                if (property != null)
+                {
+                    if (property.Owner == 2)
+                    {
+                        // Add property to list
+                        properties.Append(property);
+                    }
+                }
+            }
+            // Choose a random property
+            Random rnd = new Random();
+            int propertyIndex = rnd.Next(0, properties.Length);
+            // Buy a house on the property
+            BuyHouse(2, propertyIndex);
+        }
+
+        private void btnUpgrade4_Click(object sender, EventArgs e)
+        {
+            // Choose a randoproperty to buy a house on (that user 4 owns)
+            Property[] properties = new Property[] { };
+            foreach (Property property in properties)
+            {
+                if (property != null)
+                {
+                    if (property.Owner == 3)
+                    {
+                        // Add property to list
+                        properties.Append(property);
+                    }
+                }
+            }
+            // Choose a random property
+            Random rnd = new Random();
+            int propertyIndex = rnd.Next(0, properties.Length);
+            // Buy a house on the property
+            BuyHouse(3, propertyIndex);
         }
     }
     public class Property
     {
         public string Name { get; set; }
         public int Price { get; set; }
-        public int Rent { get; set; }
+        public int[] RentStages { get; set; } = new int[6]; // Rents for [0 houses, 1 house, 2 houses, 3 houses, 4 houses, hotel]
         public bool IsOwned { get; set; }
         public int Owner { get; set; }
+        public int Houses { get; set; } = 0;
+        public bool Hotel { get; set; } = false;
+
+        public int GetRent()
+        {
+            if (Hotel)
+                return RentStages[5];
+            else
+                return RentStages[Houses];
+        }
     }
+
 }

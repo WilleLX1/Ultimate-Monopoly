@@ -30,3 +30,4 @@ C:\Github-Stuff\Ultimate-Monopoly\Monopoly\obj\Debug\net8.0-windows\refint\Monop
 C:\Github-Stuff\Ultimate-Monopoly\Monopoly\obj\Debug\net8.0-windows\Monopoly.pdb
 C:\Github-Stuff\Ultimate-Monopoly\Monopoly\obj\Debug\net8.0-windows\Monopoly.genruntimeconfig.cache
 C:\Github-Stuff\Ultimate-Monopoly\Monopoly\obj\Debug\net8.0-windows\ref\Monopoly.dll
+C:\Github-Stuff\Ultimate-Monopoly\Monopoly\obj\Debug\net8.0-windows\Monopoly.sourcelink.json
