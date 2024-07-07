@@ -141,7 +141,8 @@ namespace Monopoly
                 Price = 1000,
                 RentStages = new int[] { 50, 200, 600, 1700, 3000, 4750 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Pink"
             };
             properties[2] = null;
             properties[3] = new Property
@@ -150,7 +151,8 @@ namespace Monopoly
                 Price = 1000,
                 RentStages = new int[] { 100, 400, 1100, 3400, 6000, 8550 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Pink"
             };
             properties[4] = null;
             properties[5] = new Property
@@ -167,7 +169,8 @@ namespace Monopoly
                 Price = 2000,
                 RentStages = new int[] { 100, 550, 1700, 5150, 7600, 9500 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Light Blue"
             };
             properties[7] = null;
             properties[8] = new Property
@@ -176,7 +179,8 @@ namespace Monopoly
                 Price = 2000,
                 RentStages = new int[] { 100, 550, 1700, 5150, 7600, 9500 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Light Blue"
             };
             properties[9] = new Property
             {
@@ -184,7 +188,8 @@ namespace Monopoly
                 Price = 2200,
                 RentStages = new int[] { 150, 750, 2000, 5750, 8500, 11500 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Light Blue"
             };
             properties[10] = null;
             properties[11] = new Property
@@ -193,7 +198,8 @@ namespace Monopoly
                 Price = 2500,
                 RentStages = new int[] { 200, 1000, 2000, 8500, 12000, 14250 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Purple"
             };
             properties[12] = new Property
             {
@@ -201,7 +207,7 @@ namespace Monopoly
                 Price = 3000,
                 RentStages = new int[] { 0, 0, 0, 0, 0, 0 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
             };
             properties[13] = new Property
             {
@@ -209,7 +215,8 @@ namespace Monopoly
                 Price = 2500,
                 RentStages = new int[] { 200, 1000, 2800, 8500, 12000, 14250 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Purple"
             };
             properties[14] = new Property
             {
@@ -217,7 +224,8 @@ namespace Monopoly
                 Price = 3000,
                 RentStages = new int[] { 250, 1150, 3400, 9500, 13000, 17000 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Purple"
             };
             properties[15] = new Property
             {
@@ -225,7 +233,7 @@ namespace Monopoly
                 Price = 3000,
                 RentStages = new int[] { 0, 0, 0, 0, 0, 0 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
             };
             properties[16] = new Property
             {
@@ -233,7 +241,8 @@ namespace Monopoly
                 Price = 3500,
                 RentStages = new int[] { 250, 1350, 3800, 10500, 14250, 18000 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Orange"
             };
             properties[17] = null;
             properties[18] = new Property
@@ -242,7 +251,8 @@ namespace Monopoly
                 Price = 3500,
                 RentStages = new int[] { 250, 1350, 3800, 10500, 14250, 18000 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Orange"
             };
             properties[19] = new Property
             {
@@ -250,7 +260,8 @@ namespace Monopoly
                 Price = 3800,
                 RentStages = new int[] { 300, 1500, 4200, 11500, 15000, 19000 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Orange"
             };
             properties[20] = null;
             properties[21] = new Property
@@ -259,7 +270,8 @@ namespace Monopoly
                 Price = 4200,
                 RentStages = new int[] { 350, 1700, 4750, 13000, 16500, 20000 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Red"
             };
             properties[22] = null;
             properties[23] = new Property
@@ -268,7 +280,8 @@ namespace Monopoly
                 Price = 4200,
                 RentStages = new int[] { 350, 1700, 4750, 13000, 16500, 20000 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Red"
             };
             properties[24] = new Property
             {
@@ -276,7 +289,8 @@ namespace Monopoly
                 Price = 4500,
                 RentStages = new int[] { 400, 2000, 5750, 14000, 17500, 21000 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Red"
             };
             properties[25] = new Property
             {
@@ -292,7 +306,8 @@ namespace Monopoly
                 Price = 5000,
                 RentStages = new int[] { 400, 2200, 6300, 15000, 18500, 22000 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Yellow"
             };
             properties[27] = new Property
             {
@@ -300,7 +315,8 @@ namespace Monopoly
                 Price = 5000,
                 RentStages = new int[] { 400, 2200, 6300, 15000, 18500, 22000 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Yellow"
             };
             properties[28] = new Property
             {
@@ -308,7 +324,7 @@ namespace Monopoly
                 Price = 3000,
                 RentStages = new int[] { 0, 0, 0, 0, 0, 0 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
             };
             properties[29] = new Property
             {
@@ -316,7 +332,8 @@ namespace Monopoly
                 Price = 5300,
                 RentStages = new int[] { 400, 2300, 6800, 16000, 19500, 23000 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Yellow"
             };
             properties[30] = null;
             properties[31] = new Property
@@ -325,7 +342,8 @@ namespace Monopoly
                 Price = 6000,
                 RentStages = new int[] { 500, 2500, 7500, 17000, 21000, 24200 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Green"
             };
             properties[32] = new Property
             {
@@ -333,7 +351,8 @@ namespace Monopoly
                 Price = 6000,
                 RentStages = new int[] { 500, 2500, 7500, 17000, 21000, 24200 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Green"
             };
             properties[33] = null;
             properties[34] = new Property
@@ -342,7 +361,8 @@ namespace Monopoly
                 Price = 6000,
                 RentStages = new int[] { 550, 2850, 8500, 19000, 23000, 27000 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Green"
             };
             properties[35] = new Property
             {
@@ -359,7 +379,8 @@ namespace Monopoly
                 Price = 6500,
                 RentStages = new int[] { 650, 3300, 9500, 21000, 25000, 28500 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Dark Blue"
             };
             properties[38] = null;
             properties[39] = new Property
@@ -368,7 +389,8 @@ namespace Monopoly
                 Price = 8000,
                 RentStages = new int[] { 1000, 4000, 12000, 26500, 32500, 40000 },
                 IsOwned = false,
-                Owner = -1
+                Owner = -1,
+                ColorGroup = "Dark Blue"
             };
         }
 
@@ -519,22 +541,7 @@ namespace Monopoly
                 // Check if the property is owned
                 if (properties[space].IsOwned)
                 {
-                    // Pay rent
-                    int owner = properties[space].Owner;
-                    if (owner != player) // Ensure player doesn't pay rent to themselves
-                    {
-                        int rent = properties[space].GetRent();
-                        if (playerMoney[player] >= rent)
-                        {
-                            playerMoney[player] -= rent;
-                            playerMoney[owner] += rent;
-                            Log("Player " + player + " paid $" + rent + " rent to Player " + owner);
-                        }
-                        else
-                        {
-                            Log("Player " + player + " does not have enough money to pay rent to Player " + owner);
-                        }
-                    }
+                    PayRent(player, space);
                 }
                 else
                 {
@@ -718,12 +725,26 @@ namespace Monopoly
         private void BuyHouse(int player, int propertyIndex)
         {
             Property property = properties[propertyIndex];
-            if (property.Owner != player || property.Hotel || property.Houses >= 4)
+
+            if (property == null)
+            {
+                Log("Property at index " + propertyIndex + " does not exist.");
+                return;
+            }
+
+            if (property.Owner != player || property.Hotel || property.Houses > 4)
             {
                 Log("Cannot buy more houses or hotels for this property.");
                 return;
             }
 
+            if (property.Houses == 4)
+            {
+                // Buy a hotel
+                BuyHotel(player, propertyIndex);
+                return;
+            }
+            
             int houseCost = property.Price / 2; // Example house cost, adjust as needed
             if (playerMoney[player] >= houseCost)
             {
@@ -736,7 +757,6 @@ namespace Monopoly
                 Log("Player " + player + " does not have enough money to buy a house on " + property.Name);
             }
         }
-
         private void BuyHotel(int player, int propertyIndex)
         {
             Property property = properties[propertyIndex];
@@ -1087,6 +1107,8 @@ namespace Monopoly
             {
                 // Player rolled a double
                 Log("Player " + (currentPlayer + 1) + " rolled a double (" + dice1 + ", " + dice2 + ")");
+                // Player can roll again
+                return;
             }
 
             // Switch to next player
@@ -1124,7 +1146,14 @@ namespace Monopoly
                         totalProperties++;
                         // Get name of property
                         string name = this.properties[i].Name;
-                        properties += name + "\r\n";
+                        // Get the number of houses on the property
+                        int houses = this.properties[i].Houses;
+                        // if the property has a hotel set houses to 5
+                        if (this.properties[i].Hotel)
+                        {
+                            houses = 5;
+                        }
+                        properties += name + " (" + houses + ")\r\n";
                     }
                 }
             }
@@ -1132,93 +1161,283 @@ namespace Monopoly
             return finnished;
         }
 
-        private void btnUpgrade1_Click(object sender, EventArgs e)
+
+
+        private List<int> GetCompleteProperties(int player)
         {
-            // Choose a randoproperty to buy a house on (that user 4 owns)
-            Property[] properties = new Property[] { };
-            foreach (Property property in properties)
+            // Find all properties owned by player
+            List<int> ownedProperties = new List<int>();
+            for (int i = 0; i < properties.Length; i++)
             {
-                if (property != null)
+                if (properties[i] != null && properties[i].Owner == player)
                 {
-                    if (property.Owner == 0)
+                    ownedProperties.Add(i);
+                }
+            }
+
+            // Find all properties that is complete (like 3 properties in the same color group)
+            List<int> completeGroups = new List<int>();
+            int pinkCount = 0;
+            int lightBlueCount = 0;
+            int purpleCount = 0;
+            int orangeCount = 0;
+            int redCount = 0;
+            int yellowCount = 0;
+            int greenCount = 0;
+            int darkBlueCount = 0;
+
+            bool pinkComplete = false;
+            bool lightBlueComplete = false;
+            bool purpleComplete = false;
+            bool orangeComplete = false;
+            bool redComplete = false;
+            bool yellowComplete = false;
+            bool greenComplete = false;
+            bool darkBlueComplete = false;
+
+            for (int i = 0; i < ownedProperties.Count; i++)
+            {
+                if (properties[ownedProperties[i]].ColorGroup == "Pink")
+                {
+                    pinkCount++;
+                }
+                else if (properties[ownedProperties[i]].ColorGroup == "Light Blue")
+                {
+                    lightBlueCount++;
+                }
+                else if (properties[ownedProperties[i]].ColorGroup == "Purple")
+                {
+                    purpleCount++;
+                }
+                else if (properties[ownedProperties[i]].ColorGroup == "Orange")
+                {
+                    orangeCount++;
+                }
+                else if (properties[ownedProperties[i]].ColorGroup == "Red")
+                {
+                    redCount++;
+                }
+                else if (properties[ownedProperties[i]].ColorGroup == "Yellow")
+                {
+                    yellowCount++;
+                }
+                else if (properties[ownedProperties[i]].ColorGroup == "Green")
+                {
+                    greenCount++;
+                }
+                else if (properties[ownedProperties[i]].ColorGroup == "Dark Blue")
+                {
+                    darkBlueCount++;
+                }
+            }
+
+            // Check if player has a complete color group
+            if (pinkCount == 2)
+            {
+                pinkComplete = true;
+            }
+            else if (lightBlueCount == 3)
+            {
+                lightBlueComplete = true;
+            }
+            else if (purpleCount == 3)
+            {
+                purpleComplete = true;
+            }
+            else if (orangeCount == 3)
+            {
+                orangeComplete = true;
+            }
+            else if (redCount == 3)
+            {
+                redComplete = true;
+            }
+            else if (yellowCount == 3)
+            {
+                yellowComplete = true;
+            }
+            else if (greenCount == 3)
+            {
+                greenComplete = true;
+            }
+            else if (darkBlueCount == 2)
+            {
+                darkBlueComplete = true;
+            }
+
+            // If player has a complete color group, add all properties in that group to the complete groups list
+            if (pinkComplete)
+            {
+                foreach (int index in ownedProperties)
+                {
+                    if (properties[index].ColorGroup == "Pink")
                     {
-                        // Add property to list
-                        properties.Append(property);
+                        completeGroups.Add(index);
                     }
                 }
             }
-            // Choose a random property
-            Random rnd = new Random();
-            int propertyIndex = rnd.Next(0, properties.Length);
-            // Buy a house on the property
-            BuyHouse(0, propertyIndex);
+            if (lightBlueComplete)
+            {
+                foreach (int index in ownedProperties)
+                {
+                    if (properties[index].ColorGroup == "Light Blue")
+                    {
+                        completeGroups.Add(index);
+                    }
+                }
+            }
+            if (purpleComplete)
+            {
+                foreach (int index in ownedProperties)
+                {
+                    if (properties[index].ColorGroup == "Purple")
+                    {
+                        completeGroups.Add(index);
+                    }
+                }
+            }
+            if (orangeComplete)
+            {
+                foreach (int index in ownedProperties)
+                {
+                    if (properties[index].ColorGroup == "Orange")
+                    {
+                        completeGroups.Add(index);
+                    }
+                }
+            }
+            if (redComplete)
+            {
+                foreach (int index in ownedProperties)
+                {
+                    if (properties[index].ColorGroup == "Red")
+                    {
+                        completeGroups.Add(index);
+                    }
+                }
+            }
+            if (yellowComplete)
+            {
+                foreach (int index in ownedProperties)
+                {
+                    if (properties[index].ColorGroup == "Yellow")
+                    {
+                        completeGroups.Add(index);
+                    }
+                }
+            }
+            if (greenComplete)
+            {
+                foreach (int index in ownedProperties)
+                {
+                    if (properties[index].ColorGroup == "Green")
+                    {
+                        completeGroups.Add(index);
+                    }
+                }
+            }
+            if (darkBlueComplete)
+            {
+                foreach (int index in ownedProperties)
+                {
+                    if (properties[index].ColorGroup == "Dark Blue")
+                    {
+                        completeGroups.Add(index);
+                    }
+                }
+            }
+
+            return completeGroups;
+        }
+
+        private void btnUpgrade1_Click(object sender, EventArgs e)
+        {
+            List<int> completeGroups = GetCompleteProperties(0);
+
+            // Log complete groups
+            Log("Player 0 complete color groups: " + string.Join(", ", completeGroups.Select(i => properties[i].Name)));
+
+            // If player has a complete color group, offer to buy houses
+            if (completeGroups.Count > 0)
+            {
+                // Offer to buy houses
+                DialogResult result = MessageBox.Show("Do you want to buy houses for your complete color groups?", "Buy Houses", MessageBoxButtons.YesNo);
+                if (result == DialogResult.Yes)
+                {
+                    foreach (int propertyIndex in completeGroups)
+                    {
+                        BuyHouse(0, propertyIndex);
+                    }
+                }
+            }
         }
 
         private void btnUpgrade2_Click(object sender, EventArgs e)
         {
-            // Choose a randoproperty to buy a house on (that user 4 owns)
-            Property[] properties = new Property[] { };
-            foreach (Property property in properties)
+            List<int> completeGroups = GetCompleteProperties(1);
+
+            // Log complete groups
+            Log("Player 1 complete color groups: " + string.Join(", ", completeGroups.Select(i => properties[i].Name)));
+
+            // If player has a complete color group, offer to buy houses
+            if (completeGroups.Count > 0)
             {
-                if (property != null)
+                // Offer to buy houses
+                DialogResult result = MessageBox.Show("Do you want to buy houses for your complete color groups?", "Buy Houses", MessageBoxButtons.YesNo);
+                if (result == DialogResult.Yes)
                 {
-                    if (property.Owner == 1)
+                    foreach (int propertyIndex in completeGroups)
                     {
-                        // Add property to list
-                        properties.Append(property);
+                        BuyHouse(1, propertyIndex);
                     }
                 }
             }
-            // Choose a random property
-            Random rnd = new Random();
-            int propertyIndex = rnd.Next(0, properties.Length);
-            // Buy a house on the property
-            BuyHouse(1, propertyIndex);
         }
 
         private void btnUpgrade3_Click(object sender, EventArgs e)
         {
-            // Choose a randoproperty to buy a house on (that user 4 owns)
-            Property[] properties = new Property[] { };
-            foreach (Property property in properties)
+            List<int> completeGroups = GetCompleteProperties(2);
+
+            // Log complete groups
+            Log("Player 2 complete color groups: " + string.Join(", ", completeGroups.Select(i => properties[i].Name)));
+
+            // If player has a complete color group, offer to buy houses
+            if (completeGroups.Count > 0)
             {
-                if (property != null)
+                // Offer to buy houses
+                DialogResult result = MessageBox.Show("Do you want to buy houses for your complete color groups?", "Buy Houses", MessageBoxButtons.YesNo);
+                if (result == DialogResult.Yes)
                 {
-                    if (property.Owner == 2)
+                    foreach (int propertyIndex in completeGroups)
                     {
-                        // Add property to list
-                        properties.Append(property);
+                        BuyHouse(2, propertyIndex);
                     }
                 }
             }
-            // Choose a random property
-            Random rnd = new Random();
-            int propertyIndex = rnd.Next(0, properties.Length);
-            // Buy a house on the property
-            BuyHouse(2, propertyIndex);
         }
 
         private void btnUpgrade4_Click(object sender, EventArgs e)
         {
-            // Choose a randoproperty to buy a house on (that user 4 owns)
-            Property[] properties = new Property[] { };
-            foreach (Property property in properties)
+            List<int> completeGroups = GetCompleteProperties(3);
+
+            // Log complete groups
+            Log("Player 3 complete color groups: " + string.Join(", ", completeGroups.Select(i => properties[i].Name)));
+
+            // If player has a complete color group, offer to buy houses
+            if (completeGroups.Count > 0)
             {
-                if (property != null)
+                // Offer to buy houses
+                DialogResult result = MessageBox.Show("Do you want to buy houses for your complete color groups?", "Buy Houses", MessageBoxButtons.YesNo);
+                if (result == DialogResult.Yes)
                 {
-                    if (property.Owner == 3)
+                    foreach (int propertyIndex in completeGroups)
                     {
-                        // Add property to list
-                        properties.Append(property);
+                        BuyHouse(3, propertyIndex);
                     }
                 }
             }
-            // Choose a random property
-            Random rnd = new Random();
-            int propertyIndex = rnd.Next(0, properties.Length);
-            // Buy a house on the property
-            BuyHouse(3, propertyIndex);
         }
+    
     }
     public class Property
     {
@@ -1229,6 +1448,7 @@ namespace Monopoly
         public int Owner { get; set; }
         public int Houses { get; set; } = 0;
         public bool Hotel { get; set; } = false;
+        public string ColorGroup { get; set; }
 
         public int GetRent()
         {
