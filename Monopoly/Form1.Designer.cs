@@ -50,11 +50,20 @@
             btnUpgrade2 = new Button();
             btnUpgrade3 = new Button();
             btnUpgrade4 = new Button();
+            btnConnect = new Button();
+            txtIp = new TextBox();
+            txtPort = new TextBox();
+            groupBox1 = new GroupBox();
+            groupBox2 = new GroupBox();
+            btnCreateGame = new Button();
+            txtServerPort = new TextBox();
+            groupBox1.SuspendLayout();
+            groupBox2.SuspendLayout();
             SuspendLayout();
             // 
             // btnRoll
             // 
-            btnRoll.Location = new Point(321, 307);
+            btnRoll.Location = new Point(222, 220);
             btnRoll.Margin = new Padding(3, 2, 3, 2);
             btnRoll.Name = "btnRoll";
             btnRoll.Size = new Size(82, 22);
@@ -66,7 +75,7 @@
             // txtLog
             // 
             txtLog.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            txtLog.Location = new Point(489, 239);
+            txtLog.Location = new Point(489, 261);
             txtLog.Margin = new Padding(3, 2, 3, 2);
             txtLog.Multiline = true;
             txtLog.Name = "txtLog";
@@ -236,7 +245,7 @@
             // btnUpgrade1
             // 
             btnUpgrade1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnUpgrade1.Location = new Point(489, 213);
+            btnUpgrade1.Location = new Point(489, 235);
             btnUpgrade1.Margin = new Padding(3, 2, 3, 2);
             btnUpgrade1.Name = "btnUpgrade1";
             btnUpgrade1.Size = new Size(67, 22);
@@ -248,7 +257,7 @@
             // btnUpgrade2
             // 
             btnUpgrade2.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnUpgrade2.Location = new Point(636, 213);
+            btnUpgrade2.Location = new Point(636, 235);
             btnUpgrade2.Margin = new Padding(3, 2, 3, 2);
             btnUpgrade2.Name = "btnUpgrade2";
             btnUpgrade2.Size = new Size(67, 22);
@@ -260,7 +269,7 @@
             // btnUpgrade3
             // 
             btnUpgrade3.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnUpgrade3.Location = new Point(772, 213);
+            btnUpgrade3.Location = new Point(772, 235);
             btnUpgrade3.Margin = new Padding(3, 2, 3, 2);
             btnUpgrade3.Name = "btnUpgrade3";
             btnUpgrade3.Size = new Size(67, 22);
@@ -272,7 +281,7 @@
             // btnUpgrade4
             // 
             btnUpgrade4.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnUpgrade4.Location = new Point(900, 213);
+            btnUpgrade4.Location = new Point(900, 235);
             btnUpgrade4.Margin = new Padding(3, 2, 3, 2);
             btnUpgrade4.Name = "btnUpgrade4";
             btnUpgrade4.Size = new Size(67, 22);
@@ -281,11 +290,82 @@
             btnUpgrade4.UseVisualStyleBackColor = true;
             btnUpgrade4.Click += btnUpgrade4_Click;
             // 
+            // btnConnect
+            // 
+            btnConnect.Location = new Point(217, 22);
+            btnConnect.Name = "btnConnect";
+            btnConnect.Size = new Size(75, 23);
+            btnConnect.TabIndex = 22;
+            btnConnect.Text = "Gå";
+            btnConnect.UseVisualStyleBackColor = true;
+            btnConnect.Click += btnConnect_Click;
+            // 
+            // txtIp
+            // 
+            txtIp.Location = new Point(6, 22);
+            txtIp.Name = "txtIp";
+            txtIp.Size = new Size(142, 23);
+            txtIp.TabIndex = 23;
+            txtIp.Text = "127.0.0.1";
+            // 
+            // txtPort
+            // 
+            txtPort.Location = new Point(154, 22);
+            txtPort.Name = "txtPort";
+            txtPort.Size = new Size(55, 23);
+            txtPort.TabIndex = 24;
+            txtPort.Text = "1234";
+            // 
+            // groupBox1
+            // 
+            groupBox1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            groupBox1.Controls.Add(txtIp);
+            groupBox1.Controls.Add(txtPort);
+            groupBox1.Controls.Add(btnConnect);
+            groupBox1.Location = new Point(12, 380);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Size = new Size(305, 54);
+            groupBox1.TabIndex = 25;
+            groupBox1.TabStop = false;
+            groupBox1.Text = "Gå med!";
+            // 
+            // groupBox2
+            // 
+            groupBox2.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            groupBox2.Controls.Add(btnCreateGame);
+            groupBox2.Controls.Add(txtServerPort);
+            groupBox2.Location = new Point(323, 380);
+            groupBox2.Name = "groupBox2";
+            groupBox2.Size = new Size(160, 54);
+            groupBox2.TabIndex = 26;
+            groupBox2.TabStop = false;
+            groupBox2.Text = "Skapa spel";
+            // 
+            // btnCreateGame
+            // 
+            btnCreateGame.Location = new Point(79, 21);
+            btnCreateGame.Name = "btnCreateGame";
+            btnCreateGame.Size = new Size(75, 23);
+            btnCreateGame.TabIndex = 28;
+            btnCreateGame.Text = "Skapa";
+            btnCreateGame.UseVisualStyleBackColor = true;
+            btnCreateGame.Click += btnCreateGame_Click;
+            // 
+            // txtServerPort
+            // 
+            txtServerPort.Location = new Point(6, 22);
+            txtServerPort.Name = "txtServerPort";
+            txtServerPort.Size = new Size(67, 23);
+            txtServerPort.TabIndex = 27;
+            txtServerPort.Text = "1234";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1011, 420);
+            ClientSize = new Size(1011, 442);
+            Controls.Add(groupBox2);
+            Controls.Add(groupBox1);
             Controls.Add(btnUpgrade4);
             Controls.Add(btnUpgrade3);
             Controls.Add(btnUpgrade2);
@@ -311,6 +391,10 @@
             Margin = new Padding(3, 2, 3, 2);
             Name = "Form1";
             Text = "Form1";
+            groupBox1.ResumeLayout(false);
+            groupBox1.PerformLayout();
+            groupBox2.ResumeLayout(false);
+            groupBox2.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -339,5 +423,12 @@
         private Button btnUpgrade2;
         private Button btnUpgrade3;
         private Button btnUpgrade4;
+        private Button btnConnect;
+        private TextBox txtIp;
+        private TextBox txtPort;
+        private GroupBox groupBox1;
+        private GroupBox groupBox2;
+        private Button btnCreateGame;
+        private TextBox txtServerPort;
     }
 }

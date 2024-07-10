@@ -1,3 +1,9 @@
+using Microsoft.VisualBasic.Devices;
+using System.IO;
+using System.Net.Sockets;
+using System.Text;
+using static System.Windows.Forms.DataFormats;
+
 namespace Monopoly
 {
 
@@ -21,6 +27,10 @@ namespace Monopoly
         Property[] properties = new Property[28];
         int currentFreeParkingPot = 0;
 
+        // Networking
+        private TcpClient client;
+        private NetworkStream stream;
+
         public Form1()
         {
             InitializeComponent();
@@ -34,84 +44,212 @@ namespace Monopoly
             // Log the message to txtLog
             txtLog.AppendText(message + "\r\n");
         }
+        private void Do(string command)
+        {
+            // Send the command to the server
+            if (client != null)
+            {
+                byte[] buffer = Encoding.ASCII.GetBytes(command);
+                stream.Write(buffer, 0, buffer.Length);
+                // Send \n to indicate end of command
+                stream.WriteByte((byte)'\n');
+            }
+
+            try
+            {
+                if (command.StartsWith("Player"))
+                {
+                    int player = int.Parse(command.Substring(7, 1));
+                    string action = command.Substring(9);
+
+                    switch (action.Split(' ')[0])
+                    {
+                        case "SetMoney":
+                            int money = int.Parse(action.Substring(9));
+                            playerMoney[player] = money;
+                            Log("Player " + player + " set their money to $" + money);
+                            break;
+                        case "RollDice":
+                            int dice = RollDice();
+                            Log("Player " + player + " rolled a " + dice);
+                            MovePlayer(player, dice);
+                            break;
+                        case "BuyHouse":
+                            int property = int.Parse(action.Substring(9));
+                            BuyHouse(player, property);
+                            break;
+                        case "BuyHotel":
+                            property = int.Parse(action.Substring(9));
+                            BuyHotel(player, property);
+                            break;
+                        case "EndTurn":
+                            currentPlayer = (currentPlayer + 1) % players.Length;
+                            Log("Player " + player + " ended their turn");
+                            Log("It is now Player " + currentPlayer + "'s turn");
+                            break;
+                        case "FreeParking":
+                            Log("Player " + player + " landed on Free Parking");
+                            playerMoney[player] += currentFreeParkingPot;
+                            Log("Player " + player + " collected $" + currentFreeParkingPot + " from Free Parking");
+                            currentFreeParkingPot = 0;
+                            break;
+                        case "GoToJail":
+                            Log("Player " + player + " landed on Go to Jail");
+                            break;
+                        default:
+                            Log("Invalid action: " + action);
+                            break;
+                    }
+                }
+                else if (command.StartsWith("UpdateLabels"))
+                {
+                    lblMoney1.Text = "Money: $" + playerMoney[0];
+                    lblMoney2.Text = "Money: $" + playerMoney[1];
+                    lblMoney3.Text = "Money: $" + playerMoney[2];
+                    lblMoney4.Text = "Money: $" + playerMoney[3];
+
+                    lblPos1.Text = "Position: " + playerPosition[0];
+                    lblPos2.Text = "Position: " + playerPosition[1];
+                    lblPos3.Text = "Position: " + playerPosition[2];
+                    lblPos4.Text = "Position: " + playerPosition[3];
+
+                    lblOwned1.Text = "Properties: " + GetPlayerProperties(0);
+                    lblOwned2.Text = "Properties: " + GetPlayerProperties(1);
+                    lblOwned3.Text = "Properties: " + GetPlayerProperties(2);
+                    lblOwned4.Text = "Properties: " + GetPlayerProperties(3);
+
+                    Log("Updated player money, position and properties labels");
+                }
+                else if (command.StartsWith("Move"))
+                {
+                    int player = int.Parse(command.Substring(4, 1));
+                    int spaces = int.Parse(command.Substring(6));
+                    MovePlayer(player, spaces);
+                    Log("Player " + player + " moved " + spaces + " spaces");
+                }
+                else if (command.StartsWith("Buy"))
+                {
+                    // Handle Buy commands here
+                }
+                else if (command.StartsWith("Pay"))
+                {
+                    int player = int.Parse(command.Substring(3, 1));
+                    int amount = int.Parse(command.Substring(5));
+                    playerMoney[player] -= amount;
+                    Log("Player " + player + " paid $" + amount);
+                }
+                else if (command.StartsWith("Give"))
+                {
+                    int player = int.Parse(command.Substring(4, 1));
+                    int amount = int.Parse(command.Substring(6));
+                    playerMoney[player] += amount;
+                    Log("Player " + player + " received $" + amount);
+                }
+                else if (command.StartsWith("Draw"))
+                {
+                    int player = int.Parse(command.Substring(4, 1));
+                    string card = command.Substring(6);
+                    int cardNumber = int.Parse(card.Substring(card.Length - 1));
+                    if (card.StartsWith("Chance"))
+                    {
+                        DrawChanceCard(player, cardNumber);
+                    }
+                    else if (card.StartsWith("CommunityChest"))
+                    {
+                        DrawCommunityChestCard(player, cardNumber);
+                    }
+                    else
+                    {
+                        Log("Invalid card type: " + card);
+                    }
+                }
+                else if (command.StartsWith("MoveTo"))
+                {
+                    int player = int.Parse(command.Substring(7, 1));
+                    int space = int.Parse(command.Substring(8));
+                    MovePlayerToSpace(player, space);
+                }
+                else if (command.StartsWith("EndTurn"))
+                {
+                    Log("Player " + currentPlayer + " ended their turn");
+                    currentPlayer = (currentPlayer + 1) % players.Length;
+                    Log("It is now Player " + currentPlayer + "'s turn");
+                }
+                else if (command.StartsWith("CreateGame"))
+                {
+                    Log("Game created");
+                }
+                else
+                {
+                    Log("Invalid command: " + command);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log("Error processing command: " + ex.Message);
+            }
+        }
+
+
         private void InitializePlayers()
         {
-            // Initialize the players (By creating new PictureBoxes)
             players[0] = new PictureBox();
             players[1] = new PictureBox();
             players[2] = new PictureBox();
             players[3] = new PictureBox();
 
-            // Change color of the players
             players[0].BackColor = Color.Red;
             players[1].BackColor = Color.Blue;
             players[2].BackColor = Color.Green;
             players[3].BackColor = Color.Yellow;
 
-            // Set the size of the PictureBoxes
             for (int i = 0; i < players.Length; i++)
             {
                 players[i].Size = new Size(22, 22);
-                players[i].Location = new Point(10 + (i * 40), 10); // Set initial location
-                this.Controls.Add(players[i]); // Add PictureBox to the form
+                players[i].Location = new Point(10 + (i * 40), 10);
+                this.Controls.Add(players[i]);
             }
 
-            // Initialize the player money
-            playerMoney[0] = 30000;
-            playerMoney[1] = 30000;
-            playerMoney[2] = 30000;
-            playerMoney[3] = 30000;
+            for (int i = 0; i < playerMoney.Length; i++)
+            {
+                playerMoney[i] = 30000;
+                Do($"Player {i} SetMoney 30000");
+                playerPosition[i] = 0;
+            }
 
-            // Initialize the player position
-            playerPosition[0] = 0;
-            playerPosition[1] = 0;
-            playerPosition[2] = 0;
-            playerPosition[3] = 0;
+            if (client != null)
+            {
+                // Send acknowledgment
+                byte[] ack = Encoding.ASCII.GetBytes("ACK");
+                stream.Write(ack, 0, ack.Length);
+            }
 
-            // Update player money
-            lblMoney1.Text = "Money: $" + playerMoney[0];
-            lblMoney2.Text = "Money: $" + playerMoney[1];
-            lblMoney3.Text = "Money: $" + playerMoney[2];
-            lblMoney4.Text = "Money: $" + playerMoney[3];
-
-            // Update player position
-            lblPos1.Text = "Position: " + playerPosition[0];
-            lblPos2.Text = "Position: " + playerPosition[1];
-            lblPos3.Text = "Position: " + playerPosition[2];
-            lblPos4.Text = "Position: " + playerPosition[3];
+            Do("UpdateLabels");
         }
 
         private void GenerateBoard()
         {
-            boardSpaces = new PictureBox[boardSize * 4 - 4]; // Adjusted the array size to account for the corner spaces
+            boardSpaces = new PictureBox[boardSize * 4 - 4];
             int index = 0;
 
-            // Top row (left to right)
             for (int i = 0; i < boardSize; i++)
             {
-                boardSpaces[index] = CreateBoardSpace(i * boxSize, 0);
-                index++;
+                boardSpaces[index++] = CreateBoardSpace(i * boxSize, 0);
             }
 
-            // Right column (top to bottom)
             for (int i = 1; i < boardSize; i++)
             {
-                boardSpaces[index] = CreateBoardSpace((boardSize - 1) * boxSize, i * boxSize);
-                index++;
+                boardSpaces[index++] = CreateBoardSpace((boardSize - 1) * boxSize, i * boxSize);
             }
 
-            // Bottom row (right to left)
             for (int i = boardSize - 2; i >= 0; i--)
             {
-                boardSpaces[index] = CreateBoardSpace(i * boxSize, (boardSize - 1) * boxSize);
-                index++;
+                boardSpaces[index++] = CreateBoardSpace(i * boxSize, (boardSize - 1) * boxSize);
             }
 
-            // Left column (bottom to top)
             for (int i = boardSize - 2; i > 0; i--)
             {
-                boardSpaces[index] = CreateBoardSpace(0, i * boxSize);
-                index++;
+                boardSpaces[index++] = CreateBoardSpace(0, i * boxSize);
             }
         }
 
@@ -128,445 +266,145 @@ namespace Monopoly
             return box;
         }
 
-
         // Initialize properties
         private void InitializeProperties()
         {
-            properties = new Property[40]; // Adjusted array size to accommodate all properties
+            properties = new Property[40];
 
-            properties[0] = null;
-            properties[1] = new Property
-            {
-                Name = "Västerlång Gatan",
-                Price = 1000,
-                RentStages = new int[] { 50, 200, 600, 1700, 3000, 4750 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Pink"
-            };
-            properties[2] = null;
-            properties[3] = new Property
-            {
-                Name = "Hornsgatan",
-                Price = 1000,
-                RentStages = new int[] { 100, 400, 1100, 3400, 6000, 8550 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Pink"
-            };
-            properties[4] = null;
-            properties[5] = new Property
-            {
-                Name = "Södra Station",
-                Price = 4000,
-                RentStages = new int[] { 0, 0, 0, 0, 0, 0 },
-                IsOwned = false,
-                Owner = -1
-            };
-            properties[6] = new Property
-            {
-                Name = "Folkunga Gatan",
-                Price = 2000,
-                RentStages = new int[] { 100, 550, 1700, 5150, 7600, 9500 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Light Blue"
-            };
-            properties[7] = null;
-            properties[8] = new Property
-            {
-                Name = "Götagatan",
-                Price = 2000,
-                RentStages = new int[] { 100, 550, 1700, 5150, 7600, 9500 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Light Blue"
-            };
-            properties[9] = new Property
-            {
-                Name = "Ringvägen",
-                Price = 2200,
-                RentStages = new int[] { 150, 750, 2000, 5750, 8500, 11500 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Light Blue"
-            };
-            properties[10] = null;
-            properties[11] = new Property
-            {
-                Name = "S:T Eriksgatan",
-                Price = 2500,
-                RentStages = new int[] { 200, 1000, 2000, 8500, 12000, 14250 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Purple"
-            };
-            properties[12] = new Property
-            {
-                Name = "Elverket",
-                Price = 3000,
-                RentStages = new int[] { 0, 0, 0, 0, 0, 0 },
-                IsOwned = false,
-                Owner = -1,
-            };
-            properties[13] = new Property
-            {
-                Name = "Odengatan",
-                Price = 2500,
-                RentStages = new int[] { 200, 1000, 2800, 8500, 12000, 14250 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Purple"
-            };
-            properties[14] = new Property
-            {
-                Name = "Valhallavägen",
-                Price = 3000,
-                RentStages = new int[] { 250, 1150, 3400, 9500, 13000, 17000 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Purple"
-            };
-            properties[15] = new Property
-            {
-                Name = "Östra Station",
-                Price = 3000,
-                RentStages = new int[] { 0, 0, 0, 0, 0, 0 },
-                IsOwned = false,
-                Owner = -1,
-            };
-            properties[16] = new Property
-            {
-                Name = "Sturegatan",
-                Price = 3500,
-                RentStages = new int[] { 250, 1350, 3800, 10500, 14250, 18000 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Orange"
-            };
-            properties[17] = null;
-            properties[18] = new Property
-            {
-                Name = "Karlavägen",
-                Price = 3500,
-                RentStages = new int[] { 250, 1350, 3800, 10500, 14250, 18000 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Orange"
-            };
-            properties[19] = new Property
-            {
-                Name = "Narvavägen",
-                Price = 3800,
-                RentStages = new int[] { 300, 1500, 4200, 11500, 15000, 19000 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Orange"
-            };
-            properties[20] = null;
-            properties[21] = new Property
-            {
-                Name = "Strandvägen",
-                Price = 4200,
-                RentStages = new int[] { 350, 1700, 4750, 13000, 16500, 20000 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Red"
-            };
-            properties[22] = null;
-            properties[23] = new Property
-            {
-                Name = "Kungsträdgårdsgatan",
-                Price = 4200,
-                RentStages = new int[] { 350, 1700, 4750, 13000, 16500, 20000 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Red"
-            };
-            properties[24] = new Property
-            {
-                Name = "Hamngatan",
-                Price = 4500,
-                RentStages = new int[] { 400, 2000, 5750, 14000, 17500, 21000 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Red"
-            };
-            properties[25] = new Property
-            {
-                Name = "Central Station",
-                Price = 4000,
-                RentStages = new int[] { 0, 0, 0, 0, 0, 0 },
-                IsOwned = false,
-                Owner = -1
-            };
-            properties[26] = new Property
-            {
-                Name = "Vasagatan",
-                Price = 5000,
-                RentStages = new int[] { 400, 2200, 6300, 15000, 18500, 22000 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Yellow"
-            };
-            properties[27] = new Property
-            {
-                Name = "Kungsgatan",
-                Price = 5000,
-                RentStages = new int[] { 400, 2200, 6300, 15000, 18500, 22000 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Yellow"
-            };
-            properties[28] = new Property
-            {
-                Name = "Vattenledningsverket",
-                Price = 3000,
-                RentStages = new int[] { 0, 0, 0, 0, 0, 0 },
-                IsOwned = false,
-                Owner = -1,
-            };
-            properties[29] = new Property
-            {
-                Name = "Stureplan",
-                Price = 5300,
-                RentStages = new int[] { 400, 2300, 6800, 16000, 19500, 23000 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Yellow"
-            };
-            properties[30] = null;
-            properties[31] = new Property
-            {
-                Name = "Gustav Adolfs Torg",
-                Price = 6000,
-                RentStages = new int[] { 500, 2500, 7500, 17000, 21000, 24200 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Green"
-            };
-            properties[32] = new Property
-            {
-                Name = "Drottningatan",
-                Price = 6000,
-                RentStages = new int[] { 500, 2500, 7500, 17000, 21000, 24200 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Green"
-            };
-            properties[33] = null;
-            properties[34] = new Property
-            {
-                Name = "Diplomatstaden",
-                Price = 6000,
-                RentStages = new int[] { 550, 2850, 8500, 19000, 23000, 27000 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Green"
-            };
-            properties[35] = new Property
-            {
-                Name = "Norra Station",
-                Price = 6000,
-                RentStages = new int[] { 0, 0, 0, 0, 0, 0 },
-                IsOwned = false,
-                Owner = -1
-            };
-            properties[36] = null;
-            properties[37] = new Property
-            {
-                Name = "Centrum",
-                Price = 6500,
-                RentStages = new int[] { 650, 3300, 9500, 21000, 25000, 28500 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Dark Blue"
-            };
-            properties[38] = null;
-            properties[39] = new Property
-            {
-                Name = "Norrmalmstorg",
-                Price = 8000,
-                RentStages = new int[] { 1000, 4000, 12000, 26500, 32500, 40000 },
-                IsOwned = false,
-                Owner = -1,
-                ColorGroup = "Dark Blue"
-            };
+            properties[1] = new Property { Name = "Västerlång Gatan", Price = 1000, RentStages = new int[] { 50, 200, 600, 1700, 3000, 4750 }, ColorGroup = "Pink" };
+            properties[3] = new Property { Name = "Hornsgatan", Price = 1000, RentStages = new int[] { 100, 400, 1100, 3400, 6000, 8550 }, ColorGroup = "Pink" };
+            properties[5] = new Property { Name = "Södra Station", Price = 4000 };
+            properties[6] = new Property { Name = "Folkunga Gatan", Price = 2000, RentStages = new int[] { 100, 550, 1700, 5150, 7600, 9500 }, ColorGroup = "Light Blue" };
+            properties[8] = new Property { Name = "Götagatan", Price = 2000, RentStages = new int[] { 100, 550, 1700, 5150, 7600, 9500 }, ColorGroup = "Light Blue" };
+            properties[9] = new Property { Name = "Ringvägen", Price = 2200, RentStages = new int[] { 150, 750, 2000, 5750, 8500, 11500 }, ColorGroup = "Light Blue" };
+            properties[11] = new Property { Name = "S:T Eriksgatan", Price = 2500, RentStages = new int[] { 200, 1000, 2000, 8500, 12000, 14250 }, ColorGroup = "Purple" };
+            properties[12] = new Property { Name = "Elverket", Price = 3000 };
+            properties[13] = new Property { Name = "Odengatan", Price = 2500, RentStages = new int[] { 200, 1000, 2800, 8500, 12000, 14250 }, ColorGroup = "Purple" };
+            properties[14] = new Property { Name = "Valhallavägen", Price = 3000, RentStages = new int[] { 250, 1150, 3400, 9500, 13000, 17000 }, ColorGroup = "Purple" };
+            properties[15] = new Property { Name = "Östra Station", Price = 3000 };
+            properties[16] = new Property { Name = "Sturegatan", Price = 3500, RentStages = new int[] { 250, 1350, 3800, 10500, 14250, 18000 }, ColorGroup = "Orange" };
+            properties[18] = new Property { Name = "Karlavägen", Price = 3500, RentStages = new int[] { 250, 1350, 3800, 10500, 14250, 18000 }, ColorGroup = "Orange" };
+            properties[19] = new Property { Name = "Narvavägen", Price = 3800, RentStages = new int[] { 300, 1500, 4200, 11500, 15000, 19000 }, ColorGroup = "Orange" };
+            properties[21] = new Property { Name = "Strandvägen", Price = 4200, RentStages = new int[] { 350, 1700, 4750, 13000, 16500, 20000 }, ColorGroup = "Red" };
+            properties[23] = new Property { Name = "Kungsträdgårdsgatan", Price = 4200, RentStages = new int[] { 350, 1700, 4750, 13000, 16500, 20000 }, ColorGroup = "Red" };
+            properties[24] = new Property { Name = "Hamngatan", Price = 4500, RentStages = new int[] { 400, 2000, 5750, 14000, 17500, 21000 }, ColorGroup = "Red" };
+            properties[25] = new Property { Name = "Central Station", Price = 4000 };
+            properties[26] = new Property { Name = "Vasagatan", Price = 5000, RentStages = new int[] { 400, 2200, 6300, 15000, 18500, 22000 }, ColorGroup = "Yellow" };
+            properties[27] = new Property { Name = "Kungsgatan", Price = 5000, RentStages = new int[] { 400, 2200, 6300, 15000, 18500, 22000 }, ColorGroup = "Yellow" };
+            properties[28] = new Property { Name = "Vattenledningsverket", Price = 3000 };
+            properties[29] = new Property { Name = "Stureplan", Price = 5300, RentStages = new int[] { 400, 2300, 6800, 16000, 19500, 23000 }, ColorGroup = "Yellow" };
+            properties[31] = new Property { Name = "Gustav Adolfs Torg", Price = 6000, RentStages = new int[] { 500, 2500, 7500, 17000, 21000, 24200 }, ColorGroup = "Green" };
+            properties[32] = new Property { Name = "Drottningatan", Price = 6000, RentStages = new int[] { 500, 2500, 7500, 17000, 21000, 24200 }, ColorGroup = "Green" };
+            properties[34] = new Property { Name = "Diplomatstaden", Price = 6000, RentStages = new int[] { 550, 2850, 8500, 19000, 23000, 27000 }, ColorGroup = "Green" };
+            properties[35] = new Property { Name = "Norra Station", Price = 6000 };
+            properties[37] = new Property { Name = "Centrum", Price = 6500, RentStages = new int[] { 650, 3300, 9500, 21000, 25000, 28500 }, ColorGroup = "Dark Blue" };
+            properties[39] = new Property { Name = "Norrmalmstorg", Price = 8000, RentStages = new int[] { 1000, 4000, 12000, 26500, 32500, 40000 }, ColorGroup = "Dark Blue" };
         }
-
 
         // Roll the dice
         private int RollDice()
         {
             Random rnd = new Random();
-            int dice1 = rnd.Next(1, 7);
-            return dice1;
+            return rnd.Next(1, 7);
         }
 
         // Move the player
         private void MovePlayer(int player, int spaces)
         {
-            // Get int of player current position
             int currentPos = playerPosition[player];
-
-            // Update player position
             playerPosition[player] = (playerPosition[player] + spaces) % boardSpaces.Length;
             int newPos = playerPosition[player];
-
-            // Move the player to the new position
             players[player].Location = new Point(boardSpaces[newPos].Location.X + (boxSize / 4), boardSpaces[newPos].Location.Y + (boxSize / 4));
-
-            // Apply effects of landing on the space
             ApplySpaceEffects(player, newPos, currentPos);
         }
 
         // Function for moving the player to a specific space
         private void MovePlayerToSpace(int player, int space)
         {
-            // Update player position
             playerPosition[player] = space;
             int newPos = playerPosition[player];
-
-            // Move the player to the new position
             players[player].Location = new Point(boardSpaces[newPos].Location.X + (boxSize / 4), boardSpaces[newPos].Location.Y + (boxSize / 4));
         }
-
 
         // Apply effects of landing on the space
         private void ApplySpaceEffects(int player, int space, int oldSpace)
         {
-            // Ensure the player index is valid
             if (player < 0 || player >= players.Length) return;
 
-            // Check what space the player landed on
-            if (space == 0)
+            if (space == 0 && oldSpace > 0)
             {
-                if (oldSpace > 0)
-                {
-                    // Player passed Go
-                    playerMoney[player] += 4000;
-                    Log("Player " + player + " passed Go and collected $4000");
-                }
+                Do("Give" + player + " 4000");
+                Log("Player " + player + " passed Go and collected $4000");
             }
             else if (space == 10)
             {
-                // Player landed on Jail
                 Log("Player " + player + " visited Jail");
             }
             else if (space == 20)
             {
-                // Player landed on Free Parking
-                Log("Player " + player + " landed on Free Parking");
-                // Player collects the Free Parking pot
-                playerMoney[player] += currentFreeParkingPot;
-                // Log
-                Log("Player " + player + " collected $" + currentFreeParkingPot + " from Free Parking");
-                currentFreeParkingPot = 0;
+                Do("Player " + player + " FreeParking");
             }
             else if (space == 30)
             {
-                // Player landed on Go to Jail
                 Log("Player " + player + " landed on Go to Jail");
             }
-
-            // Chance and Community Chest
             else if (space == 2 || space == 17 || space == 33)
             {
-                // Allmänning
-                DrawCommunityChestCard(player);
+                Random rnd = new Random();
+                int card = rnd.Next(1, 17);
+                Do("Draw" + player + " CommunityChest " + card);
             }
             else if (space == 7 || space == 22 || space == 36)
             {
-                // Chans
-                DrawChanceCard(player);
+                Random rnd = new Random();
+                int card = rnd.Next(1, 17);
+                Do("Draw" + player + " Chance " + card);
             }
-
-            // Utilities
             else if (space == 28 || space == 12)
             {
-                // Vattenverk / Elverket
                 if (IsPropertyOwned(space))
                 {
                     int steps = space - oldSpace;
-                    // Pay rent
                     PayRentUtilities(player, space, steps);
                 }
                 else
                 {
-                    // Buy property
                     BuyProperty(player, space, properties[space].Price);
                 }
             }
-
-            // Järnvägsstationer
             else if (space == 5 || space == 15 || space == 25 || space == 35)
             {
-                // Järnvägsstation
-                // Check if the property is owned
                 if (IsPropertyOwned(space))
                 {
-                    // Pay rent
                     PayRentJärnväg(player, space);
                 }
                 else
                 {
-                    // Buy property
                     BuyProperty(player, space, properties[space].Price);
                 }
             }
-
-            // Skatter
             else if (space == 4)
             {
-                // Inkomst skatt betala
                 playerMoney[player] -= 4000;
                 currentFreeParkingPot += 4000;
-                // Log
                 Log("Player " + player + " paid $4000 income tax");
             }
             else if (space == 38)
             {
-                // Lyx skatt betala
                 playerMoney[player] -= 2000;
                 currentFreeParkingPot += 2000;
-                // Log
                 Log("Player " + player + " paid $2000 luxury tax");
             }
-
-            // Properties
             else
             {
-                // Player landed on a property
                 Log("Player " + player + " landed on property " + space);
-                // Check if the property is owned
                 if (properties[space].IsOwned)
                 {
                     PayRent(player, space);
                 }
                 else
                 {
-                    // Offer to buy property
-                    int price = properties[space].Price;
-                    if (playerMoney[player] >= price)
-                    {
-                        // Ask player if they want to buy the property
-                        DialogResult result = MessageBox.Show("Do you want to buy property " + space + " for $" + price + "?", "Buy Property", MessageBoxButtons.YesNo);
-                        if (result == DialogResult.Yes)
-                        {
-                            playerMoney[player] -= price;
-                            properties[space].IsOwned = true;
-                            properties[space].Owner = player;
-                            Log("Player " + player + " bought property " + space + " for $" + price);
-                        }
-                        else
-                        {
-                            Log("Player " + player + " declined to buy property " + space);
-                        }
-                    }
-                    else
-                    {
-                        Log("Player " + player + " does not have enough money to buy property " + space);
-                    }
+                    BuyProperty(player, space, properties[space].Price);
                 }
             }
         }
@@ -589,83 +427,58 @@ namespace Monopoly
                 Log("Player " + player + " does not have enough money to pay rent to Player " + owner);
             }
         }
-
+        
         // Function to pay rent for Järnväg
         private void PayRentJärnväg(int player, int property)
         {
-            // Get the owner of the property
             int owner = properties[property].Owner;
-            // Get the rent amount
             int rent = 0;
-            // Check how many Järnväg stations the owner has
             int järnvägCount = 0;
+
             for (int i = 0; i < properties.Length; i++)
             {
-                if (properties[i] != null)
+                if (properties[i] != null && properties[i].Owner == owner && (i == 5 || i == 15 || i == 25 || i == 35))
                 {
-                    if (properties[i].Owner == owner)
-                    {
-                        if (i == 5 || i == 15 || i == 25 || i == 35)
-                        {
-                            järnvägCount++;
-                        }
-                    }
+                    järnvägCount++;
                 }
             }
-            // Calculate rent
-            if (järnvägCount == 1)
-            {
-                rent = 500;
-            }
-            else if (järnvägCount == 2)
-            {
-                rent = 1000;
-            }
-            else if (järnvägCount == 3)
-            {
-                rent = 2000;
-            }
-            else if (järnvägCount == 4)
-            {
-                rent = 4000;
-            }
-            // Pay the rent
-            if (playerMoney[player] - rent < 0)
-            {
-                // Player does not have enough money to pay rent
-                Log("Player " + player + " does not have enough money to pay rent to Player " + owner);
-                return;
-            }
-            playerMoney[player] -= rent;
-            playerMoney[owner] += rent;
-            Log("Player " + player + " paid $" + rent + " rent to Player " + owner);
-        }
 
+            switch (järnvägCount)
+            {
+                case 1: rent = 500; break;
+                case 2: rent = 1000; break;
+                case 3: rent = 2000; break;
+                case 4: rent = 4000; break;
+            }
+
+            if (playerMoney[player] >= rent)
+            {
+                playerMoney[player] -= rent;
+                playerMoney[owner] += rent;
+                Log("Player " + player + " paid $" + rent + " rent to Player " + owner);
+            }
+            else
+            {
+                Log("Player " + player + " does not have enough money to pay rent to Player " + owner);
+            }
+        }
+        
         // Function to pay rent for Utilities
         private void PayRentUtilities(int player, int property, int steps)
         {
-            // Get the owner of the property
             int owner = properties[property].Owner;
-            // Get the rent amount
             int rent = 0;
             int rentPerStep = 0;
-            // Check how many Utilities the owner has
             int utilityCount = 0;
+
             for (int i = 0; i < properties.Length; i++)
             {
-                if (properties[i] != null)
+                if (properties[i] != null && properties[i].Owner == owner && (i == 12 || i == 28))
                 {
-                    if (properties[i].Owner == owner)
-                    {
-                        // Check if the property is a Utility
-                        if (i == 12 || i == 28)
-                        {
-                            utilityCount++;
-                        }
-                    }
+                    utilityCount++;
                 }
             }
-            // Calculate rent
+
             if (utilityCount == 1)
             {
                 rentPerStep = 100;
@@ -674,18 +487,19 @@ namespace Monopoly
             {
                 rentPerStep = 200;
             }
-            // Calculate rent
+
             rent = rentPerStep * steps;
-            // Pay the rent
-            if (playerMoney[player] - rent < 0)
+
+            if (playerMoney[player] >= rent)
             {
-                // Player does not have enough money to pay rent
-                Log("Player " + player + " does not have enough money to pay rent to Player " + owner);
-                return;
+                playerMoney[player] -= rent;
+                playerMoney[owner] += rent;
+                Log("Player " + player + " paid $" + rent + " rent to Player " + owner + " (" + rentPerStep + " * " + steps + ")");
             }
-            playerMoney[player] -= rent;
-            playerMoney[owner] += rent;
-            Log("Player " + player + " paid $" + rent + " rent to Player " + owner + " (" + rentPerStep + " * " + steps + ")");
+            else
+            {
+                Log("Player " + player + " does not have enough money to pay rent to Player " + owner);
+            }
         }
 
 
@@ -697,6 +511,7 @@ namespace Monopoly
             // Check if the player has enough money
             if (playerMoney[player] >= price)
             {
+                /*
                 // Ask player if they want to buy the property
                 DialogResult result = MessageBox.Show("Do you want to buy property " + propertyName + " (" + property + ") for $" + price + "?", "Buy Property", MessageBoxButtons.YesNo);
                 if (result == DialogResult.Yes)
@@ -708,12 +523,21 @@ namespace Monopoly
                     properties[property].Owner = player;
                     Log("Player " + player + " bought property " + propertyName + " (" + property + ") for $" + price);
                 }
+                */
+
+                // Player bought the property
+                playerMoney[player] -= price;
+                // Set property as owned
+                properties[property].IsOwned = true;
+                properties[property].Owner = player;
+                Log("Player " + player + " bought property " + propertyName + " (" + property + ") for $" + price);
             }
             else
             {
                 Log("Player " + player + " does not have enough money to buy property " + propertyName + " (" + property + ")");
             }
         }
+
 
         // Function to see if property is owned
         private bool IsPropertyOwned(int property)
@@ -726,12 +550,6 @@ namespace Monopoly
         {
             Property property = properties[propertyIndex];
 
-            if (property == null)
-            {
-                Log("Property at index " + propertyIndex + " does not exist.");
-                return;
-            }
-
             if (property.Owner != player || property.Hotel || property.Houses > 4)
             {
                 Log("Cannot buy more houses or hotels for this property.");
@@ -740,12 +558,11 @@ namespace Monopoly
 
             if (property.Houses == 4)
             {
-                // Buy a hotel
                 BuyHotel(player, propertyIndex);
                 return;
             }
-            
-            int houseCost = property.Price / 2; // Example house cost, adjust as needed
+
+            int houseCost = property.Price / 2;
             if (playerMoney[player] >= houseCost)
             {
                 playerMoney[player] -= houseCost;
@@ -760,13 +577,14 @@ namespace Monopoly
         private void BuyHotel(int player, int propertyIndex)
         {
             Property property = properties[propertyIndex];
+            int hotelCost = property.Price;
+
             if (property.Owner != player || property.Hotel || property.Houses < 4)
             {
                 Log("Cannot buy a hotel for this property.");
                 return;
             }
 
-            int hotelCost = property.Price; // Example hotel cost, adjust as needed
             if (playerMoney[player] >= hotelCost)
             {
                 playerMoney[player] -= hotelCost;
@@ -781,356 +599,189 @@ namespace Monopoly
         }
 
 
-
-
         // Function to draw a Chance Card
-        private void DrawChanceCard(int player)
+        private void DrawChanceCard(int player, int card)
         {
-            // Draw a random Chance Card
-            Random rnd = new Random();
-            int card = rnd.Next(1, 17);
-            // Check which card was drawn
-            if (card == 1)
+            switch (card)
             {
-                // Ta en tripp till Östra Station (Få $4000 om passerar "Gå")
-                if (playerPosition[player] >= 15)
-                {
-                    playerMoney[player] += 4000;
-                }
-                playerPosition[player] = 15;
-                // Log
-                Log("Player " + player + " drew a Chance Card and went to Östra Station");
-            }
-            else if (card == 2)
-            {
-                // Betala ersättning för Gatuunderhåll (Betala $800 per hus, $2300 per hotell)
-
-            }
-            else if (card == 3)
-            {
-                // Betala böter för fortkörning (Betala $300)
-                if (playerMoney[player] < 300)
-                {
-                    // Player does not have enough money to pay the speeding ticket
-                    Log("Player " + player + " does not have enough money to pay the speeding ticket");
-                    return;
-                }
-                playerMoney[player] -= 300;
-                // Log
-                Log("Player " + player + " drew a Chance Card and paid $300");
-            }
-            else if (card == 4)
-            {
-                // Gå till fängelse!
-                MovePlayerToSpace(player, 30);
-                // Log
-                Log("Player " + player + " drew a Chance Card and went to Jail");
-            }
-            else if (card == 5)
-            {
-                // Utbetalning på ert nybyggnadslån (Få $3000)
-                playerMoney[player] += 3000;
-                // Log
-                Log("Player " + player + " drew a Chance Card and received $3000");
-            }
-            else if (card == 6)
-            {
-                // Gå vidare till S:T Eriksgatan (Få $4000 om passerar "Gå")
-                if (playerPosition[player] >= 11)
-                {
-                    playerMoney[player] += 4000;
-                }
-                MovePlayerToSpace(player, 11);
-                // Log
-                Log("Player " + player + " drew a Chance Card and went to S:T Eriksgatan");
-            }
-            else if (card == 7)
-            {
-                // Ni har vunnit en korsords tävling (Få $2000)
-                playerMoney[player] += 2000;
-                // Log
-                Log("Player " + player + " drew a Chance Card and received $2000");
-            }
-            else if (card == 8)
-            {
-                // Alla era fastigheter måste repareras (Betala $500 per hus, $2000 per hotell)
-
-            }
-            else if (card == 9)
-            {
-                // Betala skolavgift (Betala $3000)
-                if (playerMoney[player] < 3000)
-                {
-                    // Player does not have enough money to pay the school fee
-                    Log("Player " + player + " does not have enough money to pay the school fee");
-                    return;
-                }
-                playerMoney[player] -= 3000;
-                // Log
-                Log("Player " + player + " drew a Chance Card and paid $3000");
-            }
-            else if (card == 10)
-            {
-                // Ni lyfter sparkasseränta från banken (Få $1000)
-                playerMoney[player] += 1000;
-                // Log
-                Log("Player " + player + " drew a Chance Card and received $1000");
-            }
-            else if (card == 11)
-            {
-                // Ni slipper ut ur fängelset (Få ett Get Out of Jail Free kort)
-            }
-            else if (card == 12)
-            {
-                // Gå vidare till Hamngatan (Få $4000 om passerar "Gå")
-                if (playerPosition[player] >= 24)
-                {
-                    playerMoney[player] += 4000;
-                }
-                playerPosition[player] = 24;
-                // Log
-                Log("Player " + player + " drew a Chance Card and went to Hamngatan");
-            }
-            else if (card == 13)
-            {
-                // Oförstånd i ämbeter (Betala $400)
-                if (playerMoney[player] < 400)
-                {
-                    // Player does not have enough money to pay the fine
-                    Log("Player " + player + " does not have enough money to pay the fine");
-                    return;
-                }
-                playerMoney[player] -= 400;
-                // Log
-                Log("Player " + player + " drew a Chance Card and paid $400");
-            }
-            else if (card == 14)
-            {
-                // Gå tre steg tillbaka
-                MovePlayerToSpace(player, playerPosition[player] - 3);
-                // Log
-                Log("Player " + player + " drew a Chance Card and went back 3 spaces");
-            }
-            else if (card == 15)
-            {
-                // Gå vidare till "Gå"
-                MovePlayerToSpace(player, 0);
-                // Log
-                Log("Player " + player + " drew a Chance Card and went to Go");
-            }
-            else if (card == 16)
-            {
-                // Gå vidare till Norrmalmstorg
-                MovePlayerToSpace(player, 39);
-                // Log
-                Log("Player " + player + " drew a Chance Card and went to Norrmalmstorg");
+                case 1:
+                    if (playerPosition[player] >= 15) Do("Give" + player + " 4000");
+                    Do("MoveTo " + player + " 15");
+                    Log("Player " + player + " drew a Chance Card and went to Östra Station");
+                    break;
+                case 2:
+                    // Betala ersättning för Gatuunderhåll (Betala $800 per hus, $2300 per hotell)
+                    // Add implementation as needed
+                    break;
+                case 3:
+                    if (playerMoney[player] >= 300) Do("Pay" + player + " 300");
+                    Log("Player " + player + " drew a Chance Card and paid $300");
+                    break;
+                case 5:
+                    Do("Give" + player + " 3000");
+                    Log("Player " + player + " drew a Chance Card and received $3000");
+                    break;
+                case 6:
+                    if (playerPosition[player] >= 11) Do("Give" + player + " 4000");
+                    Do("MoveTo " + player + " 11");
+                    Log("Player " + player + " drew a Chance Card and went to S:T Eriksgatan");
+                    break;
+                case 7:
+                    Do("Give" + player + " 2000");
+                    Log("Player " + player + " drew a Chance Card and received $2000");
+                    break;
+                case 8:
+                    // Alla era fastigheter måste repareras (Betala $500 per hus, $2000 per hotell)
+                    // Add implementation as needed
+                    break;
+                case 9:
+                    if (playerMoney[player] >= 3000) Do("Pay" + player + " 3000");
+                    Log("Player " + player + " drew a Chance Card and paid $3000");
+                    break;
+                case 10:
+                    Do("Give" + player + " 1000");
+                    Log("Player " + player + " drew a Chance Card and received $1000");
+                    break;
+                case 11:
+                    // Ni slipper ut ur fängelset (Få ett Get Out of Jail Free kort)
+                    // Add implementation as needed
+                    break;
+                case 12:
+                    if (playerPosition[player] >= 24) Do("Give" + player + " 4000");
+                    Do("MoveTo " + player + " 24");
+                    Log("Player " + player + " drew a Chance Card and went to Hamngatan");
+                    break;
+                case 13:
+                    if (playerMoney[player] >= 400) Do("Pay" + player + " 400");
+                    Log("Player " + player + " drew a Chance Card and paid $400");
+                    break;
+                case 14:
+                    Do("MoveTo " + player + " " + (playerPosition[player] - 3));
+                    Log("Player " + player + " drew a Chance Card and went back 3 spaces");
+                    break;
+                case 15:
+                    Do("MoveTo " + player + " 0");
+                    Log("Player " + player + " drew a Chance Card and went to Go");
+                    break;
+                case 16:
+                    Do("MoveTo " + player + " 39");
+                    Log("Player " + player + " drew a Chance Card and went to Norrmalmstorg");
+                    break;
+                default:
+                    Log("Unknown Chance card: " + card);
+                    break;
             }
         }
-
         // Function to draw a Community Chest Card
-        private void DrawCommunityChestCard(int player)
+        private void DrawCommunityChestCard(int player, int card)
         {
-            // Draw a random Community Chest Card
-            Random rnd = new Random();
-            int card = rnd.Next(1, 17);
-            // Check which card was drawn
-            if (card == 1)
+            switch (card)
             {
-                // Felräkning i din favör (Få $4000)
-                playerMoney[player] += 4000;
-                // Log
-                Log("Player " + player + " drew a Community Chest Card and received $4000");
-            }
-            else if (card == 2)
-            {
-                // Utdelning på 7% preferensaktier (Få $500)
-                playerMoney[player] += 500;
-                // Log
-                Log("Player " + player + " drew a Community Chest Card and received $500");
-            }
-            else if (card == 3)
-            {
-                // Återbäring av skatt (Få $400)
-                playerMoney[player] += 400;
-                // Log
-                Log("Player " + player + " drew a Community Chest Card and received $400");
-            }
-            else if (card == 4)
-            {
-                // Livförsäkring förfaller (Få $2000)
-                playerMoney[player] += 2000;
-                // Log
-                Log("Player " + player + " drew a Community Chest Card and received $2000");
-            }
-            else if (card == 5)
-            {
-                // Det är er födelsedag (Få $200 från varje spelare)
-                for (int i = 0; i < players.Length; i++)
-                {
-                    if (i != player)
+                case 1:
+                    Do("Give" + player + " 4000");
+                    Log("Player " + player + " drew a Community Chest Card and received $4000");
+                    break;
+                case 2:
+                    Do("Give" + player + " 500");
+                    Log("Player " + player + " drew a Community Chest Card and received $500");
+                    break;
+                case 3:
+                    Do("Give" + player + " 400");
+                    Log("Player " + player + " drew a Community Chest Card and received $400");
+                    break;
+                case 4:
+                    Do("Give" + player + " 2000");
+                    Log("Player " + player + " drew a Community Chest Card and received $2000");
+                    break;
+                case 5:
+                    for (int i = 0; i < players.Length; i++)
                     {
-                        if (playerMoney[i] < 200)
+                        if (i != player)
                         {
-                            playerMoney[player] += playerMoney[i];
-                            playerMoney[i] = 0;
-                            // Log
-                            Log("Player " + player + " drew a Community Chest Card and received $" + playerMoney[i] + " from Player " + i);
-                        }
-                        else
-                        {
-                            playerMoney[i] -= 200;
-                            playerMoney[player] += 200;
-                            // Log
-                            Log("Player " + player + " drew a Community Chest Card and received $200 from Player " + i);
+                            if (playerMoney[i] < 200)
+                            {
+                                playerMoney[player] += playerMoney[i];
+                                playerMoney[i] = 0;
+                                Log("Player " + player + " drew a Community Chest Card and received $" + playerMoney[i] + " from Player " + i);
+                            }
+                            else
+                            {
+                                playerMoney[i] -= 200;
+                                playerMoney[player] += 200;
+                                Log("Player " + player + " drew a Community Chest Card and received $200 from Player " + i);
+                            }
                         }
                     }
-                }
+                    break;
+                case 6:
+                    if (playerMoney[player] >= 2000) Do("Pay" + player + " 2000");
+                    Log("Player " + player + " drew a Community Chest Card and paid $2000");
+                    break;
+                case 7:
+                    Do("Give" + player + " 1000");
+                    Log("Player " + player + " drew a Community Chest Card and received $1000");
+                    break;
+                case 8:
+                    MovePlayerToSpace(player, 1);
+                    Log("Player " + player + " drew a Community Chest Card and went back to Västerlånggatan");
+                    break;
+                case 9:
+                    if (playerMoney[player] >= 1000) Do("Pay" + player + " 1000");
+                    Log("Player " + player + " drew a Community Chest Card and paid $1000");
+                    break;
+                case 10:
+                    if (playerMoney[player] >= 200) Do("Pay" + player + " 200");
+                    Log("Player " + player + " drew a Community Chest Card and paid $200");
+                    break;
+                case 11:
+                    Do("Give" + player + " 2000");
+                    Log("Player " + player + " drew a Community Chest Card and received $2000");
+                    break;
+                case 12:
+                    // Ni slipper ut ur fängelset (Få ett Get Out of Jail Free kort)
+                    // Add implementation as needed
+                    break;
+                case 13:
+                    Do("Give" + player + " 1000");
+                    Log("Player " + player + " drew a Community Chest Card and received $1000");
+                    break;
+                case 14:
+                    MovePlayerToSpace(player, 0);
+                    Log("Player " + player + " drew a Community Chest Card and went to Go");
+                    break;
+                case 15:
+                    MovePlayerToSpace(player, 10);
+                    Log("Player " + player + " drew a Community Chest Card and went to Jail");
+                    break;
+                case 16:
+                    Do("Give" + player + " 200");
+                    Log("Player " + player + " drew a Community Chest Card and received $200");
+                    break;
+                default:
+                    Log("Unknown Community Chest card: " + card);
+                    break;
             }
-            else if (card == 6)
-            {
-                // Betala sjukhusräkning (Betala $2000)
-                if (playerMoney[player] < 2000)
-                {
-                    // Player does not have enough money to pay the hospital bill
-                    Log("Player " + player + " does not have enough money to pay the hospital bill");
-                    return;
-                }
-                playerMoney[player] -= 2000;
-                // Log
-                Log("Player " + player + " drew a Community Chest Card and paid $2000");
-            }
-            else if (card == 7)
-            {
-                // Likvid för försålda aktier (Få $1000)
-                playerMoney[player] += 1000;
-                // Log
-                Log("Player " + player + " drew a Community Chest Card and received $1000");
-            }
-            else if (card == 8)
-            {
-                // Gå tillbaka till Västerlånggatan
-                MovePlayerToSpace(player, 1);
-                // Log
-                Log("Player " + player + " drew a Community Chest Card and went back to Västerlånggatan");
-            }
-            else if (card == 9)
-            {
-                // Betala en försäkringspremie (Betala $1000)
-                if (playerMoney[player] < 1000)
-                {
-                    // Player does not have enough money to pay the insurance premium
-                    Log("Player " + player + " does not have enough money to pay the insurance premium");
-                    return;
-                }
-                playerMoney[player] -= 1000;
-                // Log
-                Log("Player " + player + " drew a Community Chest Card and paid $1000");
-            }
-            else if (card == 10)
-            {
-                // Betala böter eller ta ett chanskort (Betala $200)
-                if (playerMoney[player] < 200)
-                {
-                    // Player does not have enough money to pay the fine
-                    Log("Player " + player + " does not have enough money to pay the fine");
-                    return;
-                }
-                playerMoney[player] -= 200;
-                // Log
-                Log("Player " + player + " drew a Community Chest Card and paid $200");
-            }
-            else if (card == 11)
-            {
-                // Ni ärver (Få $2000)
-                playerMoney[player] += 2000;
-                // Log
-                Log("Player " + player + " drew a Community Chest Card and received $2000");
-            }
-            else if (card == 12)
-            {
-                // Ni slipper ut ur fängelset (Få ett Get Out of Jail Free kort)
-
-            }
-            else if (card == 13)
-            {
-                // Läkararvode (Betala $1000)
-                if (playerMoney[player] < 1000)
-                {
-                    // Player does not have enough money to pay the doctor's fee
-                    Log("Player " + player + " does not have enough money to pay the doctor's fee");
-                    return;
-                }
-                playerMoney[player] -= 1000;
-                // Log
-                Log("Player " + player + " drew a Community Chest Card and paid $1000");
-            }
-            else if (card == 14)
-            {
-                // Gå vidare till "Gå"
-                MovePlayerToSpace(player, 0);
-                // Log
-                Log("Player " + player + " drew a Community Chest Card and went to Go");
-            }
-            else if (card == 15)
-            {
-                // Gå direkt till fängelset
-                MovePlayerToSpace(player, 10);
-                // Log
-                Log("Player " + player + " drew a Community Chest Card and went to Jail");
-            }
-            else if (card == 16)
-            {
-                // Ni har vunnit andra pris i skönhetstävlingen (Få $200)
-                playerMoney[player] += 200;
-                // Log
-                Log("Player " + player + " drew a Community Chest Card and received $200");
-            }
-
         }
 
-
+        private void WaitForAck()
+        {
+            byte[] buffer = new byte[256];
+            int bytesRead = stream.Read(buffer, 0, buffer.Length);
+            string ack = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+            if (ack != "ACK")
+            {
+                throw new Exception("Acknowledgment not received.");
+            }
+        }
         private void btnRoll_Click(object sender, EventArgs e)
         {
-            // Roll the dice
             int dice1 = RollDice();
             int dice2 = RollDice();
-
-
-            // Calculate total dice roll
+            Log("Player " + currentPlayer + " rolled a " + dice1 + " and a " + dice2);
             int dice = dice1 + dice2;
-
-            // Move the player
-            MovePlayer(currentPlayer, dice);
-
-            // If player rolls dubbles player can roll again 
-            if (dice1 == dice2)
-            {
-                // Player rolled a double
-                Log("Player " + (currentPlayer + 1) + " rolled a double (" + dice1 + ", " + dice2 + ")");
-                // Player can roll again
-                return;
-            }
-
-            // Switch to next player
-            currentPlayer = (currentPlayer + 1) % players.Length;
-
-            // Update player money
-            lblMoney1.Text = "Money: $" + playerMoney[0];
-            lblMoney2.Text = "Money: $" + playerMoney[1];
-            lblMoney3.Text = "Money: $" + playerMoney[2];
-            lblMoney4.Text = "Money: $" + playerMoney[3];
-
-            // Update player position
-            lblPos1.Text = "Position: " + playerPosition[0];
-            lblPos2.Text = "Position: " + playerPosition[1];
-            lblPos3.Text = "Position: " + playerPosition[2];
-            lblPos4.Text = "Position: " + playerPosition[3];
-
-            // Update player owned properties
-            lblOwned1.Text = "Properties: " + GetPlayerProperties(0);
-            lblOwned2.Text = "Properties: " + GetPlayerProperties(1);
-            lblOwned3.Text = "Properties: " + GetPlayerProperties(2);
-            lblOwned4.Text = "Properties: " + GetPlayerProperties(3);
+            Do("Move" + currentPlayer + " " + dice);
+            Do("EndTurn");
+            Do("UpdateLabels");
         }
 
         private string GetPlayerProperties(int player)
@@ -1160,12 +811,8 @@ namespace Monopoly
             string finnished = (totalProperties + properties);
             return finnished;
         }
-
-
-
         private List<int> GetCompleteProperties(int player)
         {
-            // Find all properties owned by player
             List<int> ownedProperties = new List<int>();
             for (int i = 0; i < properties.Length; i++)
             {
@@ -1175,175 +822,26 @@ namespace Monopoly
                 }
             }
 
-            // Find all properties that is complete (like 3 properties in the same color group)
+            Dictionary<string, int> colorGroupCounts = new Dictionary<string, int>
+            {
+                { "Pink", 0 }, { "Light Blue", 0 }, { "Purple", 0 },
+                { "Orange", 0 }, { "Red", 0 }, { "Yellow", 0 },
+                { "Green", 0 }, { "Dark Blue", 0 }
+            };
+
+            foreach (int index in ownedProperties)
+            {
+                colorGroupCounts[properties[index].ColorGroup]++;
+            }
+
             List<int> completeGroups = new List<int>();
-            int pinkCount = 0;
-            int lightBlueCount = 0;
-            int purpleCount = 0;
-            int orangeCount = 0;
-            int redCount = 0;
-            int yellowCount = 0;
-            int greenCount = 0;
-            int darkBlueCount = 0;
 
-            bool pinkComplete = false;
-            bool lightBlueComplete = false;
-            bool purpleComplete = false;
-            bool orangeComplete = false;
-            bool redComplete = false;
-            bool yellowComplete = false;
-            bool greenComplete = false;
-            bool darkBlueComplete = false;
-
-            for (int i = 0; i < ownedProperties.Count; i++)
+            foreach (var colorGroup in colorGroupCounts)
             {
-                if (properties[ownedProperties[i]].ColorGroup == "Pink")
+                int requiredCount = colorGroup.Key == "Dark Blue" || colorGroup.Key == "Pink" ? 2 : 3;
+                if (colorGroup.Value == requiredCount)
                 {
-                    pinkCount++;
-                }
-                else if (properties[ownedProperties[i]].ColorGroup == "Light Blue")
-                {
-                    lightBlueCount++;
-                }
-                else if (properties[ownedProperties[i]].ColorGroup == "Purple")
-                {
-                    purpleCount++;
-                }
-                else if (properties[ownedProperties[i]].ColorGroup == "Orange")
-                {
-                    orangeCount++;
-                }
-                else if (properties[ownedProperties[i]].ColorGroup == "Red")
-                {
-                    redCount++;
-                }
-                else if (properties[ownedProperties[i]].ColorGroup == "Yellow")
-                {
-                    yellowCount++;
-                }
-                else if (properties[ownedProperties[i]].ColorGroup == "Green")
-                {
-                    greenCount++;
-                }
-                else if (properties[ownedProperties[i]].ColorGroup == "Dark Blue")
-                {
-                    darkBlueCount++;
-                }
-            }
-
-            // Check if player has a complete color group
-            if (pinkCount == 2)
-            {
-                pinkComplete = true;
-            }
-            else if (lightBlueCount == 3)
-            {
-                lightBlueComplete = true;
-            }
-            else if (purpleCount == 3)
-            {
-                purpleComplete = true;
-            }
-            else if (orangeCount == 3)
-            {
-                orangeComplete = true;
-            }
-            else if (redCount == 3)
-            {
-                redComplete = true;
-            }
-            else if (yellowCount == 3)
-            {
-                yellowComplete = true;
-            }
-            else if (greenCount == 3)
-            {
-                greenComplete = true;
-            }
-            else if (darkBlueCount == 2)
-            {
-                darkBlueComplete = true;
-            }
-
-            // If player has a complete color group, add all properties in that group to the complete groups list
-            if (pinkComplete)
-            {
-                foreach (int index in ownedProperties)
-                {
-                    if (properties[index].ColorGroup == "Pink")
-                    {
-                        completeGroups.Add(index);
-                    }
-                }
-            }
-            if (lightBlueComplete)
-            {
-                foreach (int index in ownedProperties)
-                {
-                    if (properties[index].ColorGroup == "Light Blue")
-                    {
-                        completeGroups.Add(index);
-                    }
-                }
-            }
-            if (purpleComplete)
-            {
-                foreach (int index in ownedProperties)
-                {
-                    if (properties[index].ColorGroup == "Purple")
-                    {
-                        completeGroups.Add(index);
-                    }
-                }
-            }
-            if (orangeComplete)
-            {
-                foreach (int index in ownedProperties)
-                {
-                    if (properties[index].ColorGroup == "Orange")
-                    {
-                        completeGroups.Add(index);
-                    }
-                }
-            }
-            if (redComplete)
-            {
-                foreach (int index in ownedProperties)
-                {
-                    if (properties[index].ColorGroup == "Red")
-                    {
-                        completeGroups.Add(index);
-                    }
-                }
-            }
-            if (yellowComplete)
-            {
-                foreach (int index in ownedProperties)
-                {
-                    if (properties[index].ColorGroup == "Yellow")
-                    {
-                        completeGroups.Add(index);
-                    }
-                }
-            }
-            if (greenComplete)
-            {
-                foreach (int index in ownedProperties)
-                {
-                    if (properties[index].ColorGroup == "Green")
-                    {
-                        completeGroups.Add(index);
-                    }
-                }
-            }
-            if (darkBlueComplete)
-            {
-                foreach (int index in ownedProperties)
-                {
-                    if (properties[index].ColorGroup == "Dark Blue")
-                    {
-                        completeGroups.Add(index);
-                    }
+                    completeGroups.AddRange(ownedProperties.Where(i => properties[i].ColorGroup == colorGroup.Key));
                 }
             }
 
@@ -1353,14 +851,9 @@ namespace Monopoly
         private void btnUpgrade1_Click(object sender, EventArgs e)
         {
             List<int> completeGroups = GetCompleteProperties(0);
-
-            // Log complete groups
             Log("Player 0 complete color groups: " + string.Join(", ", completeGroups.Select(i => properties[i].Name)));
-
-            // If player has a complete color group, offer to buy houses
             if (completeGroups.Count > 0)
             {
-                // Offer to buy houses
                 DialogResult result = MessageBox.Show("Do you want to buy houses for your complete color groups?", "Buy Houses", MessageBoxButtons.YesNo);
                 if (result == DialogResult.Yes)
                 {
@@ -1371,18 +864,12 @@ namespace Monopoly
                 }
             }
         }
-
         private void btnUpgrade2_Click(object sender, EventArgs e)
         {
             List<int> completeGroups = GetCompleteProperties(1);
-
-            // Log complete groups
             Log("Player 1 complete color groups: " + string.Join(", ", completeGroups.Select(i => properties[i].Name)));
-
-            // If player has a complete color group, offer to buy houses
             if (completeGroups.Count > 0)
             {
-                // Offer to buy houses
                 DialogResult result = MessageBox.Show("Do you want to buy houses for your complete color groups?", "Buy Houses", MessageBoxButtons.YesNo);
                 if (result == DialogResult.Yes)
                 {
@@ -1393,18 +880,12 @@ namespace Monopoly
                 }
             }
         }
-
         private void btnUpgrade3_Click(object sender, EventArgs e)
         {
             List<int> completeGroups = GetCompleteProperties(2);
-
-            // Log complete groups
             Log("Player 2 complete color groups: " + string.Join(", ", completeGroups.Select(i => properties[i].Name)));
-
-            // If player has a complete color group, offer to buy houses
             if (completeGroups.Count > 0)
             {
-                // Offer to buy houses
                 DialogResult result = MessageBox.Show("Do you want to buy houses for your complete color groups?", "Buy Houses", MessageBoxButtons.YesNo);
                 if (result == DialogResult.Yes)
                 {
@@ -1415,18 +896,12 @@ namespace Monopoly
                 }
             }
         }
-
         private void btnUpgrade4_Click(object sender, EventArgs e)
         {
             List<int> completeGroups = GetCompleteProperties(3);
-
-            // Log complete groups
             Log("Player 3 complete color groups: " + string.Join(", ", completeGroups.Select(i => properties[i].Name)));
-
-            // If player has a complete color group, offer to buy houses
             if (completeGroups.Count > 0)
             {
-                // Offer to buy houses
                 DialogResult result = MessageBox.Show("Do you want to buy houses for your complete color groups?", "Buy Houses", MessageBoxButtons.YesNo);
                 if (result == DialogResult.Yes)
                 {
@@ -1437,7 +912,75 @@ namespace Monopoly
                 }
             }
         }
-    
+
+
+        private void btnCreateGame_Click(object sender, EventArgs e)
+        {
+            Do("CreateGame");
+            try
+            {
+                int port = int.Parse(txtServerPort.Text);
+                TcpListener server = new TcpListener(System.Net.IPAddress.Any, port);
+                server.Start();
+                Log("Server started on port " + port);
+
+                client = server.AcceptTcpClient();
+                stream = client.GetStream();
+                Log("Client connected");
+            }
+            catch (Exception ex)
+            {
+                Log("Error: " + ex.Message);
+            }
+        }
+        private void btnConnect_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string ip = txtIp.Text;
+                int port = int.Parse(txtPort.Text);
+                client = new TcpClient(ip, port);
+                stream = client.GetStream();
+                Log("Connected to server at " + ip + ":" + port);
+
+                Thread thread = new Thread(Receive);
+                thread.Start();
+            }
+            catch (Exception ex)
+            {
+                Log("Error: " + ex.Message);
+            }
+        }
+        private void Receive()
+        {
+            // Receive messages from the server
+            while (true)
+            {
+                try
+                {
+                    byte[] buffer = new byte[client.ReceiveBufferSize];
+                    int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                    string message = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+
+                    // Split messages by newline characters to handle multiple commands
+                    string[] messages = message.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (string msg in messages)
+                    {
+                        if (!string.IsNullOrEmpty(msg))
+                        {
+                            Log("Server: " + message);
+                            Do(msg.Trim());
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log("Error: " + ex.Message);
+                    break;
+                }
+            }
+        }
+
     }
     public class Property
     {
@@ -1452,10 +995,7 @@ namespace Monopoly
 
         public int GetRent()
         {
-            if (Hotel)
-                return RentStages[5];
-            else
-                return RentStages[Houses];
+            return Hotel ? RentStages[5] : RentStages[Houses];
         }
     }
 
