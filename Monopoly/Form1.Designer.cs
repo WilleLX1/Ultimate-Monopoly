@@ -46,10 +46,7 @@
             lblOwned2 = new Label();
             lblOwned3 = new Label();
             lblOwned4 = new Label();
-            btnUpgrade1 = new Button();
-            btnUpgrade2 = new Button();
-            btnUpgrade3 = new Button();
-            btnUpgrade4 = new Button();
+            btnUpgrade = new Button();
             btnConnect = new Button();
             txtIp = new TextBox();
             txtPort = new TextBox();
@@ -57,12 +54,15 @@
             groupBox2 = new GroupBox();
             btnCreateGame = new Button();
             txtServerPort = new TextBox();
+            btnEndRound = new Button();
+            lblPlayer = new TextBox();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             SuspendLayout();
             // 
             // btnRoll
             // 
+            btnRoll.Enabled = false;
             btnRoll.Location = new Point(222, 220);
             btnRoll.Margin = new Padding(3, 2, 3, 2);
             btnRoll.Name = "btnRoll";
@@ -75,11 +75,12 @@
             // txtLog
             // 
             txtLog.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            txtLog.Location = new Point(489, 261);
+            txtLog.Location = new Point(489, 194);
             txtLog.Margin = new Padding(3, 2, 3, 2);
             txtLog.Multiline = true;
             txtLog.Name = "txtLog";
-            txtLog.Size = new Size(512, 173);
+            txtLog.ScrollBars = ScrollBars.Vertical;
+            txtLog.Size = new Size(512, 422);
             txtLog.TabIndex = 1;
             // 
             // label1
@@ -242,53 +243,17 @@
             lblOwned4.TabIndex = 17;
             lblOwned4.Text = "Owned:\r\nProperty 1\r\nProperty 2";
             // 
-            // btnUpgrade1
+            // btnUpgrade
             // 
-            btnUpgrade1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnUpgrade1.Location = new Point(489, 235);
-            btnUpgrade1.Margin = new Padding(3, 2, 3, 2);
-            btnUpgrade1.Name = "btnUpgrade1";
-            btnUpgrade1.Size = new Size(67, 22);
-            btnUpgrade1.TabIndex = 18;
-            btnUpgrade1.Text = "Upgrade";
-            btnUpgrade1.UseVisualStyleBackColor = true;
-            btnUpgrade1.Click += btnUpgrade1_Click;
-            // 
-            // btnUpgrade2
-            // 
-            btnUpgrade2.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnUpgrade2.Location = new Point(636, 235);
-            btnUpgrade2.Margin = new Padding(3, 2, 3, 2);
-            btnUpgrade2.Name = "btnUpgrade2";
-            btnUpgrade2.Size = new Size(67, 22);
-            btnUpgrade2.TabIndex = 19;
-            btnUpgrade2.Text = "Upgrade";
-            btnUpgrade2.UseVisualStyleBackColor = true;
-            btnUpgrade2.Click += btnUpgrade2_Click;
-            // 
-            // btnUpgrade3
-            // 
-            btnUpgrade3.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnUpgrade3.Location = new Point(772, 235);
-            btnUpgrade3.Margin = new Padding(3, 2, 3, 2);
-            btnUpgrade3.Name = "btnUpgrade3";
-            btnUpgrade3.Size = new Size(67, 22);
-            btnUpgrade3.TabIndex = 20;
-            btnUpgrade3.Text = "Upgrade";
-            btnUpgrade3.UseVisualStyleBackColor = true;
-            btnUpgrade3.Click += btnUpgrade3_Click;
-            // 
-            // btnUpgrade4
-            // 
-            btnUpgrade4.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnUpgrade4.Location = new Point(900, 235);
-            btnUpgrade4.Margin = new Padding(3, 2, 3, 2);
-            btnUpgrade4.Name = "btnUpgrade4";
-            btnUpgrade4.Size = new Size(67, 22);
-            btnUpgrade4.TabIndex = 21;
-            btnUpgrade4.Text = "Upgrade";
-            btnUpgrade4.UseVisualStyleBackColor = true;
-            btnUpgrade4.Click += btnUpgrade4_Click;
+            btnUpgrade.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnUpgrade.Location = new Point(489, 168);
+            btnUpgrade.Margin = new Padding(3, 2, 3, 2);
+            btnUpgrade.Name = "btnUpgrade";
+            btnUpgrade.Size = new Size(67, 22);
+            btnUpgrade.TabIndex = 18;
+            btnUpgrade.Text = "Upgrade";
+            btnUpgrade.UseVisualStyleBackColor = true;
+            btnUpgrade.Click += btnUpgrade_Click;
             // 
             // btnConnect
             // 
@@ -322,7 +287,7 @@
             groupBox1.Controls.Add(txtIp);
             groupBox1.Controls.Add(txtPort);
             groupBox1.Controls.Add(btnConnect);
-            groupBox1.Location = new Point(12, 380);
+            groupBox1.Location = new Point(12, 562);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new Size(305, 54);
             groupBox1.TabIndex = 25;
@@ -334,7 +299,7 @@
             groupBox2.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             groupBox2.Controls.Add(btnCreateGame);
             groupBox2.Controls.Add(txtServerPort);
-            groupBox2.Location = new Point(323, 380);
+            groupBox2.Location = new Point(323, 562);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(160, 54);
             groupBox2.TabIndex = 26;
@@ -359,17 +324,35 @@
             txtServerPort.TabIndex = 27;
             txtServerPort.Text = "1234";
             // 
+            // btnEndRound
+            // 
+            btnEndRound.Enabled = false;
+            btnEndRound.Location = new Point(222, 192);
+            btnEndRound.Name = "btnEndRound";
+            btnEndRound.Size = new Size(75, 23);
+            btnEndRound.TabIndex = 27;
+            btnEndRound.Text = "End";
+            btnEndRound.UseVisualStyleBackColor = true;
+            btnEndRound.Click += btnEndRound_Click;
+            // 
+            // lblPlayer
+            // 
+            lblPlayer.Location = new Point(94, 88);
+            lblPlayer.Name = "lblPlayer";
+            lblPlayer.Size = new Size(51, 23);
+            lblPlayer.TabIndex = 29;
+            lblPlayer.Text = "Player: 1";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1011, 442);
+            ClientSize = new Size(1011, 624);
+            Controls.Add(lblPlayer);
+            Controls.Add(btnEndRound);
             Controls.Add(groupBox2);
             Controls.Add(groupBox1);
-            Controls.Add(btnUpgrade4);
-            Controls.Add(btnUpgrade3);
-            Controls.Add(btnUpgrade2);
-            Controls.Add(btnUpgrade1);
+            Controls.Add(btnUpgrade);
             Controls.Add(lblOwned4);
             Controls.Add(lblOwned3);
             Controls.Add(lblOwned2);
@@ -419,10 +402,7 @@
         private Label lblOwned2;
         private Label lblOwned3;
         private Label lblOwned4;
-        private Button btnUpgrade1;
-        private Button btnUpgrade2;
-        private Button btnUpgrade3;
-        private Button btnUpgrade4;
+        private Button btnUpgrade;
         private Button btnConnect;
         private TextBox txtIp;
         private TextBox txtPort;
@@ -430,5 +410,7 @@
         private GroupBox groupBox2;
         private Button btnCreateGame;
         private TextBox txtServerPort;
+        private Button btnEndRound;
+        private TextBox lblPlayer;
     }
 }

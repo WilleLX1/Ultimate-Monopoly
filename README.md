@@ -39,6 +39,12 @@ A simple Monopoly game created in C#. This game allows up to 4 players to play M
 - **Free Parking**: Collect the pot of money accumulated from taxes and fines.
 - **Jail**: Players can go to jail and must either roll a double to get out, use a Get Out of Jail Free card, or pay a fine after three turns.
 
+## To Do
+- **Important implementations**: Complete the implementation of all property-related actions (buying, renting, mortgaging).
+- **Better UI**: Add images for all properties and cards. Also improve the overall design of the game so its more user-friendly.
+- **Trading System**: Allow players to trade properties and money with each other by sending trade offers.
+- **Force Bankruptcy**: Implement a system that forces players to declare bankruptcy if they can't pay their debts. (Also make user morgage properties to pay debts if needed)
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

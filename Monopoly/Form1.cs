@@ -10,11 +10,14 @@ namespace Monopoly
     public partial class Form1 : Form
     {
         // Description: Monopoly game
-        // This is a simple Monopoly game that I created for my final project in my C# class.
+        // This is a simple Monopoly game in C#.
         // It is a simple game that allows the user to play Monopoly with up to 4 players.
         // The game is played by rolling dice and moving around the board. The player can buy properties, pay rent, and collect money.
         // The game is won by the player who has the most money at the end of the game.
-        // The game is played by clicking on the dice to roll them and then moving the player around the board.
+
+        // -- Change below: -- //
+        int numberOfPlayers = 3; // Default to 4 players
+
 
         // Variables
         PictureBox[] players = new PictureBox[4];
@@ -26,10 +29,12 @@ namespace Monopoly
         int boardSize = 11; // Size of the board (11x11)
         Property[] properties = new Property[28];
         int currentFreeParkingPot = 0;
+        int clientCounter = 1; // Start at 1 since the host is Player 0
 
         // Networking
         private TcpClient client;
         private NetworkStream stream;
+        private List<TcpClient> clients = new List<TcpClient>(); // List to store connected clients
 
         public Form1()
         {
@@ -44,19 +49,25 @@ namespace Monopoly
             // Log the message to txtLog
             txtLog.AppendText(message + "\r\n");
         }
-        private void Do(string command)
+        private void Do(string command, bool broadcast = true)
         {
-            // Send the command to the server
-            if (client != null)
-            {
-                byte[] buffer = Encoding.ASCII.GetBytes(command);
-                stream.Write(buffer, 0, buffer.Length);
-                // Send \n to indicate end of command
-                stream.WriteByte((byte)'\n');
-            }
-
             try
             {
+                if (GetPlayerId() == 0) // Only the server should broadcast commands
+                {
+                    // Log
+                    if (broadcast)
+                    {
+                        Log("Broadcasting: " + command);
+                        Broadcast(GetPlayerId() + ": " + command);
+                    }
+                }
+                else
+                {
+                    // log
+                    Log("Processing: " + command);
+                }
+
                 if (command.StartsWith("Player"))
                 {
                     int player = int.Parse(command.Substring(7, 1));
@@ -82,11 +93,6 @@ namespace Monopoly
                             property = int.Parse(action.Substring(9));
                             BuyHotel(player, property);
                             break;
-                        case "EndTurn":
-                            currentPlayer = (currentPlayer + 1) % players.Length;
-                            Log("Player " + player + " ended their turn");
-                            Log("It is now Player " + currentPlayer + "'s turn");
-                            break;
                         case "FreeParking":
                             Log("Player " + player + " landed on Free Parking");
                             playerMoney[player] += currentFreeParkingPot;
@@ -101,22 +107,27 @@ namespace Monopoly
                             break;
                     }
                 }
+                else if (command.StartsWith("Roll")) // Handle Roll command from client
+                {
+                    int player = int.Parse(command.Substring(4, 1));
+                    Do("Player " + player + " RollDice");
+                }
                 else if (command.StartsWith("UpdateLabels"))
                 {
-                    lblMoney1.Text = "Money: $" + playerMoney[0];
-                    lblMoney2.Text = "Money: $" + playerMoney[1];
-                    lblMoney3.Text = "Money: $" + playerMoney[2];
-                    lblMoney4.Text = "Money: $" + playerMoney[3];
+                    lblMoney1.Text = "Money: $" + (numberOfPlayers > 0 ? playerMoney[0].ToString() : "");
+                    lblMoney2.Text = "Money: $" + (numberOfPlayers > 1 ? playerMoney[1].ToString() : "");
+                    lblMoney3.Text = "Money: $" + (numberOfPlayers > 2 ? playerMoney[2].ToString() : "");
+                    lblMoney4.Text = "Money: $" + (numberOfPlayers > 3 ? playerMoney[3].ToString() : "");
 
-                    lblPos1.Text = "Position: " + playerPosition[0];
-                    lblPos2.Text = "Position: " + playerPosition[1];
-                    lblPos3.Text = "Position: " + playerPosition[2];
-                    lblPos4.Text = "Position: " + playerPosition[3];
+                    lblPos1.Text = "Position: " + (numberOfPlayers > 0 ? playerPosition[0].ToString() : "");
+                    lblPos2.Text = "Position: " + (numberOfPlayers > 1 ? playerPosition[1].ToString() : "");
+                    lblPos3.Text = "Position: " + (numberOfPlayers > 2 ? playerPosition[2].ToString() : "");
+                    lblPos4.Text = "Position: " + (numberOfPlayers > 3 ? playerPosition[3].ToString() : "");
 
-                    lblOwned1.Text = "Properties: " + GetPlayerProperties(0);
-                    lblOwned2.Text = "Properties: " + GetPlayerProperties(1);
-                    lblOwned3.Text = "Properties: " + GetPlayerProperties(2);
-                    lblOwned4.Text = "Properties: " + GetPlayerProperties(3);
+                    lblOwned1.Text = "Properties: " + (numberOfPlayers > 0 ? GetPlayerProperties(0) : "");
+                    lblOwned2.Text = "Properties: " + (numberOfPlayers > 1 ? GetPlayerProperties(1) : "");
+                    lblOwned3.Text = "Properties: " + (numberOfPlayers > 2 ? GetPlayerProperties(2) : "");
+                    lblOwned4.Text = "Properties: " + (numberOfPlayers > 3 ? GetPlayerProperties(3) : "");
 
                     Log("Updated player money, position and properties labels");
                 }
@@ -171,9 +182,26 @@ namespace Monopoly
                 }
                 else if (command.StartsWith("EndTurn"))
                 {
+                    btnRoll.Enabled = false;
+                    btnEndRound.Enabled = false;
                     Log("Player " + currentPlayer + " ended their turn");
-                    currentPlayer = (currentPlayer + 1) % players.Length;
+
+                    if (currentPlayer != GetPlayerId())
+                    {
+                        Log("Not my turn.");
+                    }
+
+                    currentPlayer = (currentPlayer + 1) % numberOfPlayers;
                     Log("It is now Player " + currentPlayer + "'s turn");
+
+                    if (currentPlayer == GetPlayerId())
+                    {
+                        btnRoll.Enabled = true;
+                    }
+                    else
+                    {
+                        Log("It is not your turn (Current is: " + currentPlayer + ", you are: " + GetPlayerId() + ")");
+                    }
                 }
                 else if (command.StartsWith("CreateGame"))
                 {
@@ -191,37 +219,35 @@ namespace Monopoly
         }
 
 
+        private int GetPlayerId()
+        {
+            return (int.Parse(lblPlayer.Text.Substring(8, 1)));
+        }
+
         private void InitializePlayers()
         {
-            players[0] = new PictureBox();
-            players[1] = new PictureBox();
-            players[2] = new PictureBox();
-            players[3] = new PictureBox();
+            players = new PictureBox[numberOfPlayers];
+            playerMoney = new int[numberOfPlayers];
+            playerPosition = new int[numberOfPlayers];
 
-            players[0].BackColor = Color.Red;
-            players[1].BackColor = Color.Blue;
-            players[2].BackColor = Color.Green;
-            players[3].BackColor = Color.Yellow;
-
-            for (int i = 0; i < players.Length; i++)
+            for (int i = 0; i < numberOfPlayers; i++)
             {
+                players[i] = new PictureBox();
+                players[i].BackColor = i switch
+                {
+                    0 => Color.Red,
+                    1 => Color.Blue,
+                    2 => Color.Green,
+                    3 => Color.Yellow,
+                    _ => Color.Black
+                };
+
                 players[i].Size = new Size(22, 22);
                 players[i].Location = new Point(10 + (i * 40), 10);
                 this.Controls.Add(players[i]);
-            }
-
-            for (int i = 0; i < playerMoney.Length; i++)
-            {
                 playerMoney[i] = 30000;
                 Do($"Player {i} SetMoney 30000");
                 playerPosition[i] = 0;
-            }
-
-            if (client != null)
-            {
-                // Send acknowledgment
-                byte[] ack = Encoding.ASCII.GetBytes("ACK");
-                stream.Write(ack, 0, ack.Length);
             }
 
             Do("UpdateLabels");
@@ -427,7 +453,7 @@ namespace Monopoly
                 Log("Player " + player + " does not have enough money to pay rent to Player " + owner);
             }
         }
-        
+
         // Function to pay rent for Järnväg
         private void PayRentJärnväg(int player, int property)
         {
@@ -462,7 +488,7 @@ namespace Monopoly
                 Log("Player " + player + " does not have enough money to pay rent to Player " + owner);
             }
         }
-        
+
         // Function to pay rent for Utilities
         private void PayRentUtilities(int player, int property, int steps)
         {
@@ -763,26 +789,53 @@ namespace Monopoly
             }
         }
 
-        private void WaitForAck()
-        {
-            byte[] buffer = new byte[256];
-            int bytesRead = stream.Read(buffer, 0, buffer.Length);
-            string ack = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-            if (ack != "ACK")
-            {
-                throw new Exception("Acknowledgment not received.");
-            }
-        }
+
         private void btnRoll_Click(object sender, EventArgs e)
         {
-            int dice1 = RollDice();
-            int dice2 = RollDice();
-            Log("Player " + currentPlayer + " rolled a " + dice1 + " and a " + dice2);
-            int dice = dice1 + dice2;
-            Do("Move" + currentPlayer + " " + dice);
-            Do("EndTurn");
-            Do("UpdateLabels");
+            if (GetPlayerId() == 0)
+            {
+                // If player is host
+                int dice1 = RollDice();
+                int dice2 = RollDice();
+                Log("Player " + currentPlayer + " rolled a " + dice1 + " and a " + dice2);
+                int dice = dice1 + dice2;
+                Do("Move" + currentPlayer + " " + dice);
+                Do("UpdateLabels");
+                btnEndRound.Enabled = true;
+                btnRoll.Enabled = false;
+            }
+            else if (GetPlayerId() == currentPlayer)
+            {
+                // If player is client
+                byte[] data = Encoding.ASCII.GetBytes(GetPlayerId() + ": Roll" + GetPlayerId());
+                stream.Write(data, 0, data.Length);
+                Log("Sent Roll command to host");
+                btnEndRound.Enabled = true;
+                btnRoll.Enabled = false;
+            }
+            else
+            {
+                // Log
+                Log("It is not your turn (Current is: " + currentPlayer + ", you are: " + GetPlayerId() + ")");
+            }
+
         }
+        private void btnEndRound_Click(object sender, EventArgs e)
+        {
+            if (GetPlayerId() == 0)
+            {
+                // If player is host
+                Do("EndTurn");
+            }
+            else if (GetPlayerId() == currentPlayer)
+            {
+                // If player is client
+                byte[] data = Encoding.ASCII.GetBytes(GetPlayerId() + ": EndTurn");
+                stream.Write(data, 0, data.Length);
+                Log("Sent EndTurn command to host");
+            }
+        }
+
 
         private string GetPlayerProperties(int player)
         {
@@ -848,10 +901,14 @@ namespace Monopoly
             return completeGroups;
         }
 
-        private void btnUpgrade1_Click(object sender, EventArgs e)
+
+        // New upgrade function
+
+        private void btnUpgrade_Click(object sender, EventArgs e)
         {
-            List<int> completeGroups = GetCompleteProperties(0);
-            Log("Player 0 complete color groups: " + string.Join(", ", completeGroups.Select(i => properties[i].Name)));
+            int playerId = GetPlayerId();
+            List<int> completeGroups = GetCompleteProperties(playerId);
+            Log($"Player {playerId} complete color groups: " + string.Join(", ", completeGroups.Select(i => properties[i].Name)));
             if (completeGroups.Count > 0)
             {
                 DialogResult result = MessageBox.Show("Do you want to buy houses for your complete color groups?", "Buy Houses", MessageBoxButtons.YesNo);
@@ -859,55 +916,7 @@ namespace Monopoly
                 {
                     foreach (int propertyIndex in completeGroups)
                     {
-                        BuyHouse(0, propertyIndex);
-                    }
-                }
-            }
-        }
-        private void btnUpgrade2_Click(object sender, EventArgs e)
-        {
-            List<int> completeGroups = GetCompleteProperties(1);
-            Log("Player 1 complete color groups: " + string.Join(", ", completeGroups.Select(i => properties[i].Name)));
-            if (completeGroups.Count > 0)
-            {
-                DialogResult result = MessageBox.Show("Do you want to buy houses for your complete color groups?", "Buy Houses", MessageBoxButtons.YesNo);
-                if (result == DialogResult.Yes)
-                {
-                    foreach (int propertyIndex in completeGroups)
-                    {
-                        BuyHouse(1, propertyIndex);
-                    }
-                }
-            }
-        }
-        private void btnUpgrade3_Click(object sender, EventArgs e)
-        {
-            List<int> completeGroups = GetCompleteProperties(2);
-            Log("Player 2 complete color groups: " + string.Join(", ", completeGroups.Select(i => properties[i].Name)));
-            if (completeGroups.Count > 0)
-            {
-                DialogResult result = MessageBox.Show("Do you want to buy houses for your complete color groups?", "Buy Houses", MessageBoxButtons.YesNo);
-                if (result == DialogResult.Yes)
-                {
-                    foreach (int propertyIndex in completeGroups)
-                    {
-                        BuyHouse(2, propertyIndex);
-                    }
-                }
-            }
-        }
-        private void btnUpgrade4_Click(object sender, EventArgs e)
-        {
-            List<int> completeGroups = GetCompleteProperties(3);
-            Log("Player 3 complete color groups: " + string.Join(", ", completeGroups.Select(i => properties[i].Name)));
-            if (completeGroups.Count > 0)
-            {
-                DialogResult result = MessageBox.Show("Do you want to buy houses for your complete color groups?", "Buy Houses", MessageBoxButtons.YesNo);
-                if (result == DialogResult.Yes)
-                {
-                    foreach (int propertyIndex in completeGroups)
-                    {
-                        BuyHouse(3, propertyIndex);
+                        BuyHouse(playerId, propertyIndex);
                     }
                 }
             }
@@ -923,16 +932,89 @@ namespace Monopoly
                 TcpListener server = new TcpListener(System.Net.IPAddress.Any, port);
                 server.Start();
                 Log("Server started on port " + port);
+                lblPlayer.Text = "Player: 0";
+                btnRoll.Enabled = true;
 
-                client = server.AcceptTcpClient();
-                stream = client.GetStream();
-                Log("Client connected");
+                Thread acceptClientsThread = new Thread(() =>
+                {
+                    while (true)
+                    {
+                        TcpClient client = server.AcceptTcpClient();
+                        clients.Add(client);
+                        Log("Client connected");
+
+                        // Assign a unique player ID
+                        int playerId = clientCounter++;
+                        SendPlayerIdToClient(client, playerId);
+
+                        Thread clientThread = new Thread(() => ReceiveClientMessages(client));
+                        clientThread.Start();
+                    }
+                });
+                acceptClientsThread.Start();
             }
             catch (Exception ex)
             {
                 Log("Error: " + ex.Message);
             }
         }
+        private void ReceiveClientMessages(TcpClient client)
+        {
+            NetworkStream clientStream = client.GetStream();
+
+            while (true)
+            {
+                try
+                {
+                    byte[] buffer = new byte[client.ReceiveBufferSize];
+                    int bytesRead = clientStream.Read(buffer, 0, buffer.Length);
+                    string message = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+
+                    // Split messages by newline characters to handle multiple commands
+                    string[] messages = message.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (string msg in messages)
+                    {
+                        if (!string.IsNullOrEmpty(msg))
+                        {
+                            Log("Received message: " + msg);
+                            if (message.Contains("Roll"))
+                            {
+                                Do(msg.Substring(2).Trim(), false);
+                            }
+                            else
+                            {
+                                Do(msg.Substring(2).Trim());
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log("Error: " + ex.Message);
+                    break;
+                }
+            }
+        }
+        private void SendPlayerIdToClient(TcpClient client, int playerId)
+        {
+            NetworkStream clientStream = client.GetStream();
+            byte[] buffer = Encoding.ASCII.GetBytes("AssignPID: " + playerId + "\n");
+            clientStream.Write(buffer, 0, buffer.Length);
+            Log("Sent Player ID " + playerId + " to client");
+        }
+        private void Broadcast(string message)
+        {
+            byte[] buffer = Encoding.ASCII.GetBytes(message + "\n");
+            foreach (TcpClient client in clients)
+            {
+                NetworkStream clientStream = client.GetStream();
+                clientStream.Write(buffer, 0, buffer.Length);
+                // Log
+                Log("Sent message to client: " + message);
+            }
+        }
+
+        // Client
         private void btnConnect_Click(object sender, EventArgs e)
         {
             try
@@ -942,6 +1024,7 @@ namespace Monopoly
                 client = new TcpClient(ip, port);
                 stream = client.GetStream();
                 Log("Connected to server at " + ip + ":" + port);
+                lblPlayer.Text = "Player: 1";
 
                 Thread thread = new Thread(Receive);
                 thread.Start();
@@ -968,8 +1051,28 @@ namespace Monopoly
                     {
                         if (!string.IsNullOrEmpty(msg))
                         {
-                            Log("Server: " + message);
-                            Do(msg.Trim());
+                            Log("Received message: " + msg);
+
+                            if (msg.StartsWith("AssignPID:"))
+                            {
+                                int newPlayerId = int.Parse(msg.Substring(11).Trim());
+                                lblPlayer.Text = "Player: " + newPlayerId;
+                                Log("Assigned Player ID: " + newPlayerId);
+                                continue;
+                            }
+
+                            int playerId = int.Parse(msg[0].ToString());
+                            string msgContent = msg.Substring(2).Trim();
+
+                            if (playerId == GetPlayerId())
+                            {
+                                Log("Got message from myself...");
+                                continue;
+                            }
+
+                            Log("Player ID: " + playerId + " != " + GetPlayerId());
+                            Log("Server: " + msgContent);
+                            Do(msgContent.Trim());
                         }
                     }
                 }
